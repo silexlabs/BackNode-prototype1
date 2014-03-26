@@ -1,15 +1,18 @@
 $(document).ready(function() {
-	var backNode = new BackNode($('#iframe').get(0));
-	
+
+	window.backNode = new BackNode($('#iframe').get(0));
+
 	$('#tools #editor').click(function() {
 		$(this).toggleClass('switch-on');
-		backNode.editor.editable(true, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSearch.getList(), true);
 	});
 	$('#tools #open').click(function() {
 		backNode.explorer.pick(function(file) {
 			if(file.mimetype == 'text/html') {
 				backNode.file = file;
-				$(backNode.iframe).attr('src', file.url);
+				$(backNode.iframe).attr('src', file.url).load(function(){
+					backNode.document = this.contentDocument;
+				});
 			} else {
 				alert('Invalid extension !');
 			}
@@ -20,9 +23,9 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
-		backNode.editor.editable(false, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSeach.getList(),false);
 		backNode.explorer.save(backNode.file.url, $(backNode.document).html());
-		backNode.editor.editable(true, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSeach.getList(),true);
 	});
 	$(window).resize(function() {
 		$('#iframe').width($(window).width()-$('#tools').width());
