@@ -68,16 +68,37 @@ BackNode.prototype.editor = {
         backNode.editor.resizeEditableElements($(this));
     });
   },
-  showEditableElements: function(){
+  showEditableElements: function(listEditableContent, flagEditable){
+
+    
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
-    $('[data-bn="edit"]').each(function() {
-      $(this).append(edit_zone);
-      $(this).css('z-index', 1);
-      $(this).children('.backnode-editzone').css('z-index', 2);
-    });
-    $('[data-bn="edit"]').click(function() {
-      $('.backnode-editzone').not(this).show;
-    });
+    
+    var parent = this.parent;
+    if (flagEditable === true)
+    {
+      for (key in listEditableContent)
+      {
+        console.log(listEditableContent[key])
+        $(listEditableContent[key]).append(edit_zone);
+        if (listEditableContent[key] !== 'undefined'){
+            parent.editor.resizeEditableElements($(listEditableContent[key]));
+          }
+        $(listEditableContent[key]).mouseenter(function() {
+            $(this).children('.backnode-editzone').hide();
+        });
+        $(listEditableContent[key]).mouseleave(function() {
+            if ($(this).is(":focus") === false)
+            $(this).children('.backnode-editzone').show();
+        });
+      }
+    }
+    else{
+      alert(flagEditable)
+      $('.backnode-editzone').remove();
+    }
+
+
+
     $(window).resize(function() {
       backNode.editor.getAllEditableElements();
     });
@@ -89,15 +110,6 @@ BackNode.prototype.editor = {
     });
     backNode.editor.getAllEditableElements();
     $('[data-bn="edit"]').css('height', '100%');
-    $('[data-bn="edit"]').mouseenter(function() {
-      $(this).children('.backnode-editzone').hide();
-      //$(this).children('.backnode-editzone').css('z-index', 0);
-    });
-    $('[data-bn="edit"]').mouseleave(function() {
-      if ($(this).is(":focus") === false)
-          $(this).children('.backnode-editzone').show();
-      //$(this).children('.backnode-editzone').css('z-index', 2);
-    });
   }
 }
 

@@ -1,8 +1,10 @@
 $(document).ready(function() {
+
 	window.backNode = new BackNode($('#iframe').get(0));
-	
+
 	$('#tools #editor').click(function() {
-		backNode.editor.editable(backNode.baliseSearch.getList(),true);
+		$(this).toggleClass('switch-on');
+		backNode.editor.editable(backNode.baliseSeach.getList(), true);
 	});
 	$('#tools #open').click(function() {
 		backNode.explorer.pick(function(file) {
@@ -12,24 +14,37 @@ $(document).ready(function() {
 					backNode.document = this.contentDocument;
 				});
 			} else {
-				alert('File isn\'t valid !');
+				alert('Invalid extension !');
 			}
 		});
 	});
 	$('#tools #save').click(function() {
 		if(backNode.file === null) {
-			alert('you didn\'t select a file');
+			alert('No file chosen !');
 			return;
 		}
 		backNode.editor.editable(backNode.baliseSeach.getList(),false);
 		backNode.explorer.save(backNode.file.url, $(backNode.document).html());
 		backNode.editor.editable(backNode.baliseSeach.getList(),true);
 	});
-	
 	$(window).resize(function() {
 		$('#iframe').width($(window).width()-$('#tools').width());
 		$('#tools').height($(window).height());
 		$('#iframe').height($(window).height());
 		$('#CE').css({ marginLeft: -($('#CE').width()/2), marginTop: -($('#CE').height()/2) });
+		var bgrHeight = $(window).height() - $('#menu-wrapper').height() - 110;
+		if(bgrHeight > 200) {			
+			$('#tools #background').stop().fadeIn().css({
+				backgroundImage: "url('../img/backnode.png')",
+				height: bgrHeight
+			});
+		} else if(bgrHeight < 50) {
+			$('#tools #background').stop().fadeOut(50);
+		} else {
+			$('#tools #background').stop().fadeIn().css({
+				backgroundImage: "url('../img/logo.png')",
+				height: 86
+			});
+		}
 	}).resize();
 });
