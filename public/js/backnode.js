@@ -45,7 +45,9 @@ BackNode.prototype.editor = {
         $(listEditableContent[key]).removeAttr('contenteditable');
       }
     }
-    parent.editor.showEditableElements(listEditableContent,flagEditable);
+    // COMMING SOON
+    //parent.editor.showEditableElements(listEditableContent,flagEditable);
+    
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now*/
       $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
