@@ -5,6 +5,7 @@
 	<title>BackNode</title>
 	
 	<link rel="stylesheet" href="./css/normalize.css">
+	<link rel="stylesheet" href="./css/font-awesome.min.css">
 	<link rel="stylesheet" href="./css/style.css">
 	<link rel="stylesheet" href="./cloud-explorer/css/style.css">
 	
@@ -17,10 +18,20 @@
 </head>
 <body>
 	<div id="tools">
-		<div id="editor" title="Enabled/Disabled editor"></div>
-		<div id="open" title="Open file"></div>
-		<div id="save" title="Save file"></div>
+		<div id="menu-wrapper">
+			Mode <span class="bold">édition</span> :
+			<div id="editor"></div>
+			<ul>
+				<li><i id="open" class="fa fa-upload"></i> Import file</li>
+				<li><i class="fa fa-reply"></i> Cancel</li>
+				<li><i class="fa fa-eye"></i> Preview</li>
+				<li><i class="fa fa-tablet"></i> Responsive</li>
+				<li><i id="save" class="fa fa-save"></i> Save</li>
+			</ul>
+			<div id="background"></div>
+		</div>
 	</div>
+
 	<iframe src="about:blank" id="iframe"></iframe>
 	<div id="CE" ng-app="ceDirectives">
 		<div class="ce-browser"></div>
