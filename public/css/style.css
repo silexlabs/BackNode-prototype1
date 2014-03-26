@@ -76,6 +76,11 @@ body {
 	cursor: pointer;
 }
 
+#tools #menu-wrapper > ul li:not(#open) {
+	display: none;
+}
+
+
 #tools #menu-wrapper > ul li i {
 	margin-right: 5px;
 }
