@@ -1,6 +1,10 @@
 $(document).ready(function() {
 	var backNode = new BackNode($('#iframe').get(0));
-	
+	alert('test')
+	$('p').click(function(){
+		alert('toto')
+	})
+
 	$('#tools #editor').click(function() {
 		backNode.editor.editable(backNode.baliseSearch.getList(),true);
 	});
