@@ -19,6 +19,7 @@ BackNode.prototype.editor = {
   /*This method allow the user to modify the "data-bn" elements if flagEditable is true. It do the contrary if flagEditable is false */
   editable: function(listEditableContent, flagEditable) {
     var parent = this.parent;
+    parent.editor.showEditableElements(listEditableContent,flagEditable);
     if (flagEditable === true)
     {
       $(parent.document).on('click', "img", function() {
@@ -26,20 +27,26 @@ BackNode.prototype.editor = {
       });
       for (key in listEditableContent)
       {
-        /*console.log(typeof listEditableContent[key])*/
-        $(listEditableContent[key]).attr('contenteditable', 'true');
+        switch(listEditableContent[key].tagName)
+        {
+          case "img":
+            /*maybe we could put something here but we don't have to at this time*/
+          break;
+          case default:
+            $(listEditableContent[key]).attr('contenteditable', 'true');
+          break;
+        }
       }
     }
     else
     {
       for (key in listEditableContent)
       {
-          $(listEditableContent[key]).removeAttr('contenteditable');
+        $(listEditableContent[key]).removeAttr('contenteditable');
       }
     }
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {
-      showEditableElements();
       $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
       $('#popinPicture').slideDown(400, function() {
         $('#popinPicture').on("click", "span", function() {
