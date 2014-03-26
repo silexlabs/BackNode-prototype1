@@ -1,8 +1,9 @@
 var BackNode = function(iframe) {
 	this.file = null;
 	this.iframe = iframe;
-	this.document = iframe.contentWindow.document;
+	this.document = iframe.contentDocument;
   this.editor.parent = this;
+  this.baliseSearch.parent = this;
 };
 
 BackNode.prototype.explorer = {
@@ -97,16 +98,15 @@ BackNode.prototype.editor = {
 BackNode.prototype.baliseSearch = {
 
   getList: function(){
-
-    var $dataEdit       = $("[data-bn='edit']")
-      , $dataRepeat     = $("[data-bn='repeat']")
-      , $dataTemplate   = $("[data-bn='template']")
+    window.test = $(this.parent.document).find('html');
+    var $dataEdit       = $(this.parent.document).find('[data-bn="edit"]')
+      , $dataRepeat     = $(this.parent.document).find("[data-bn='repeat']")
+      , $dataTemplate   = $(this.parent.document).find("[data-bn='template']")
 
       ,  mainArray          = []
       ,  dataSoloEditArray  = []
       ,  dataTemplateArray  = []
     ;
-
 
     var checkTemplate = function($template, templateArray){
 
@@ -148,14 +148,12 @@ BackNode.prototype.baliseSearch = {
     
 
     // push solo data-bn="edit" in the mainArray
-
     for (i=0, j=$dataEdit.length; i<j; i++){
 
       var $item       = $dataEdit.eq(i)
         , hasRepeat   = $item.closest("[data-bn='repeat']").length > 0 ? true : false
         , hasTemplate = $item.closest("[data-bn='template']").length > 0 ? true : false
         ;
-
       if (!hasRepeat && !hasTemplate){
         mainArray.push($item);
       }
