@@ -1,0 +1,35 @@
+html, body {
+	overflow: hidden;
+}
+body {
+	font-family: Arial;
+}
+
+#CE {
+	display: none;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+}
+
+#tools {
+	float: left;
+	width: 90px;
+	height: 400px;
+	background-color: #222222;
+}
+#tools > div {
+	float: left;
+	width: 80px;
+	height: 80px;
+	margin: 5px 5px 0px 5px;
+	background-color: #eeeeee;
+	cursor: pointer;
+}
+
+#iframe {
+	float: left;
+	width: 200px;
+	height: 200px;
+	border: 0px none;
+}

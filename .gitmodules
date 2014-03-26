@@ -1,0 +1,3 @@
+[submodule "lib/cloud-explorer"]
+	path = lib/cloud-explorer
+	url = https://github.com/silexlabs/cloud-explorer.git

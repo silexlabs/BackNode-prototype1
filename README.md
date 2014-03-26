@@ -42,28 +42,6 @@ clone the project:
 
 Ok it's done, you can now build the project and start to work !
 
-## Build the project
-
-just enter make in your terminal :)
-
-    > make
-
-this make command will install npm dependencies (express / unifile / grunt / etc..), but other if you want -> package.json
-launch grunt compilation
-and run the project (src/app.js)
-
-for this project, we want to use [cloud-explorer](https://github.com/silexlabs/cloud-explorer) more details on functional spech tech ;)
-
-but as you can see, it's an empty project, choose you own dependencies and make us dream with your technical choice !
-
-## Test
-
-if you are on localhost, project will be accessible from **http://localhost:8080**
-
-if you are on **Cloud9**, abort the node process, and click on the **run & debug** icon (top left), create your own profile or go on app.js and dbl click on the active file (run & debug section), your project will be accessible from outside, you can find your project's url on the output panel:
-
-    https://[PROJECT]-c9-[YOUR_ACCOUNT].c9.io
-
 ## Deploy / Git / Pull request
 
 when your feature it's done and you wants to merge it into the main repo, commit your modification in your forked repo, then create a **pull request to silexlabs/BackNode**. I will try to check soon as possible your pull request, do some comment's or not and merge it. Then, i deploy your modification on heroku server :
