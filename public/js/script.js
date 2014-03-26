@@ -4,10 +4,6 @@ $(document).ready(function() {
 
 	$('#tools #editor').click(function() {
 		$(this).toggleClass('switch-on');
-		if($(this).hasClass('switch-on'))
-			$('#tools ul li:not(#open)').hide();
-		else
-			$('#tools ul li:not(#open)').show();
 		backNode.editor.editable(backNode.baliseSearch.getList(), $(this).hasClass('switch-on'));
 	});
 	$('#tools #open').click(function() {

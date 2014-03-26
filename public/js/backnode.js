@@ -8,7 +8,11 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
-		cloudExplorer.pick({}, callback);
+		cloudExplorer.pick({}, function(data){
+			callback(data);
+			$('#tools ul li:not(#open)').show();
+	                $(window).resize();
+		});
 	},
 
 	save: function(){
