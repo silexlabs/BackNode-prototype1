@@ -2,7 +2,7 @@ $(document).ready(function() {
 	var backNode = new BackNode($('#iframe').get(0));
 	
 	$('#tools #editor').click(function() {
-		backNode.editor.editable(true, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSearch.getList(),true);
 	});
 	$('#tools #open').click(function() {
 		backNode.explorer.pick(function(file) {
@@ -30,7 +30,4 @@ $(document).ready(function() {
 		$('#iframe').height($(window).height());
 		$('#CE').css({ marginLeft: -($('#CE').width()/2), marginTop: -($('#CE').height()/2) });
 	}).resize();
-
-	/*insert from quantum to test*/
-	backNode.editor.editable(backNode.searchBalise.getList(), true);
 });
