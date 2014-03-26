@@ -30,4 +30,7 @@ $(document).ready(function() {
 		$('#iframe').height($(window).height());
 		$('#CE').css({ marginLeft: -($('#CE').width()/2), marginTop: -($('#CE').height()/2) });
 	}).resize();
+
+	/*insert from quantum to test*/
+	backNode.editor.editable(backNode.searchBalise.getList(), true);
 });
