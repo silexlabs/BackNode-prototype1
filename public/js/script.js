@@ -28,8 +28,10 @@ $(document).ready(function() {
 			return;
 		}
 		backNode.editor.editable(backNode.baliseSeach.getList(),false);
-		backNode.explorer.save(backNode.file.url, $(backNode.document).html());
-		backNode.editor.editable(backNode.baliseSeach.getList(),true);
+		backNode.explorer.save(function(){
+			alert('File saved !');
+			backNode.editor.editable(backNode.baliseSeach.getList(),true);
+		});
 	});
 	$(window).resize(function() {
 		$('#iframe').width($(window).width()-$('#tools').width());

@@ -8,11 +8,16 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
+    callback = callback || function(){};
 		cloudExplorer.pick({}, callback);
 	},
 
-	save: function(){
-
+	save: function(callback){
+    callback = callback || function(){};
+    var iframe = $('iframe')[0].contentDocument;
+    var serializer = new XMLSerializer();
+    var content = serializer.serializeToString(doc);
+    cloudExplorer.write(backNode.file, content, callback);
 	}
 };
 BackNode.prototype.editor = {
