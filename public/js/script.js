@@ -1,9 +1,6 @@
 $(document).ready(function() {
-	var backNode = new BackNode($('#iframe').get(0));
-	alert('test')
-	$('p').click(function(){
-		alert('toto')
-	})
+
+	window.backNode = new BackNode($('#iframe').get(0));
 
 	$('#tools #editor').click(function() {
 		backNode.editor.editable(backNode.baliseSearch.getList(),true);
@@ -12,20 +9,22 @@ $(document).ready(function() {
 		backNode.explorer.pick(function(file) {
 			if(file.mimetype == 'text/html') {
 				backNode.file = file;
-				$(backNode.iframe).attr('src', file.url);
+				$(backNode.iframe).attr('src', file.url).load(function(){
+					backNode.document = this.contentDocument;
+				});
 			} else {
-				alert('Le type de fichier est invalide !');
+				alert('File isn\'t valid !');
 			}
 		});
 	});
 	$('#tools #save').click(function() {
 		if(backNode.file === null) {
-			alert('Vous n\'avais pas sélectioné de fichier');
+			alert('you didn\'t select a file');
 			return;
 		}
-		backNode.editor.editable(false, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSeach.getList(),false);
 		backNode.explorer.save(backNode.file.url, $(backNode.document).html());
-		backNode.editor.editable(true, backNode.baliseSeach.getList());
+		backNode.editor.editable(backNode.baliseSeach.getList(),true);
 	});
 	
 	$(window).resize(function() {
