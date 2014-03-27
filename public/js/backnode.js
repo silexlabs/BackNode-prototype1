@@ -104,11 +104,9 @@ BackNode.prototype.editor = {
     //console.log(listEditableContent)
     for (key in listEditableContent)
       {
-        //console.log(listEditableContent[key])
+
         var element = $(listEditableContent[key]);
         
-
-
         if (typeof listEditableContent[key].tagName !== 'undefined'){
           
 
