@@ -52,7 +52,10 @@ BackNode.prototype.editor = {
         }
       }
     }
+    
+    //Call the function which colorize the editable zones
     parent.editor.showEditableElements(listEditableContent,flagEditable);
+    
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
       $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
@@ -69,14 +72,11 @@ BackNode.prototype.editor = {
   resizeEditableElements: function(elem) {
     var top = elem.offset().top;
     var left = elem.offset().left;
+    //console.log(top)
+    //console.log(left)
 
     elem.children('.backnode-editzone').offset({top: top, left: left});
     elem.children('.backnode-editzone').css({width: elem.width(), height: elem.height()});
-  },
-  getAllEditableElements: function() {
-    $('[data-bn="edit"]').each(function() {
-        backNode.editor.resizeEditableElements($(this));
-    });
   },
   showEditableElements: function(listEditableContent, flagEditable){
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
@@ -86,11 +86,12 @@ BackNode.prototype.editor = {
     {
       for (key in listEditableContent)
       {
-        console.log(listEditableContent[key])
+        //console.log(listEditableContent[key])
+        if (listEditableContent[key].length > 0){
+
         $(listEditableContent[key]).append(edit_zone);
-        if (listEditableContent[key] !== 'undefined'){
-            parent.editor.resizeEditableElements($(listEditableContent[key]));
-          }
+        parent.editor.resizeEditableElements($(listEditableContent[key]));
+          
         $(listEditableContent[key]).mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
@@ -100,21 +101,13 @@ BackNode.prototype.editor = {
         });
       }
     }
-    else{
-      alert(flagEditable)
-      $('.backnode-editzone').remove();
     }
-    $(window).resize(function() {
-      backNode.editor.getAllEditableElements();
-    });
-    $('[data-bn="edit"]').keydown(function() {
-      backNode.editor.getAllEditableElements();
-    });
-    $('[data-bn="edit"]').keyup(function() {
-      backNode.editor.getAllEditableElements();
-    });
-    backNode.editor.getAllEditableElements();
-    $('[data-bn="edit"]').css('height', '100%');
+    else{
+      for (key in listEditableContent)
+      {
+        $(listEditableContent[key]).children('.backnode-editzone').remove();
+      }
+    }
   }
 }
 
@@ -195,10 +188,7 @@ BackNode.prototype.baliseSearch = {
     }
     
     mainArray.push(dataTemplateArray);
-
-
-
-
+    
     return mainArray;
 
   }
