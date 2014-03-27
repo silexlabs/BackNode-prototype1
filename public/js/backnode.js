@@ -8,11 +8,19 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
-		cloudExplorer.pick({}, callback);
+		cloudExplorer.pick({}, function(data){
+			callback(data);
+			$('#tools ul li:not(#open)').show();
+	    $(window).resize();
+		});
 	},
 
-	save: function(){
-
+	save: function(callback){
+    callback = callback || function(){};
+    var iframe = $('iframe')[0].contentDocument;
+    var serializer = new XMLSerializer();
+    var content = serializer.serializeToString(iframe);
+    cloudExplorer.write(backNode.file, content, callback);
 	}
 };
 BackNode.prototype.editor = {
@@ -87,7 +95,7 @@ BackNode.prototype.editor = {
     for (key in listEditableContent)
       {
         var element = $(parent.document).find(listEditableContent[key]);
-        console.log(element)
+        //console.log(element)
         //console.log(listEditableContent[key])
         if (element.length > 0){
           var top = element.offset().top;
@@ -114,7 +122,7 @@ BackNode.prototype.editor = {
         if (element.length > 0){
 
         element.append(edit_zone);
-        parent.editor.resizeOneElement(element.children('.backnode-editzone'));
+        parent.editor.resizeOneElement(element);
           
         element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
