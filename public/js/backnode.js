@@ -21,16 +21,15 @@ BackNode.prototype.editor = {
     var parent = this.parent;
     if (flagEditable === true)
     {
-      /*Need to be uncomment to allow the pictures modification*/
-      /*$(parent.document).on('click', "img", function() {
-        parent.editor.editPicture($(this));
-      });*/
-      for (key in listEditableContent)
+      for(key in listEditableContent)
       {
         switch(listEditableContent[key].tagName)
         {
           case "img":
-            /*maybe we could put something here but we don't have to at this time*/
+          /*listener on picture click*/
+          $(parent.document).find(listEditableContent[key]).click(function(){
+            parent.editor.editPicture($(this));
+          });
           break;
           default:
             $(listEditableContent[key]).attr('contenteditable', 'true');
@@ -38,22 +37,32 @@ BackNode.prototype.editor = {
         }
       }
     }
+    /*This function disallow the edition of elements*/
     else
     {
       for (key in listEditableContent)
       {
-        $(listEditableContent[key]).removeAttr('contenteditable');
+        if(listEditableContent[key].tagName == "img")
+        {
+          $(parent.document).off();
+        }
+        else
+        {
+          $(listEditableContent[key]).removeAttr('contenteditable');
+        }
       }
     }
     parent.editor.showEditableElements(listEditableContent,flagEditable);
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
-  editPicture: function(picture) {/*need to be modified, doesn't active now*/
+  editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
       $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
       $('#popinPicture').slideDown(400, function() {
         $('#popinPicture').on("click", "span", function() {
           picture.attr('src', $('.backNode-imgSrc').html());
           picture.attr('alt', $('.backNode-imgAlt').html());
-          $('#popinPicture').slideUp(400);
+          $('#popinPicture').slideUp(400,function(){
+            $('#popinPicture').remove();
+          });
         });
       });
   },
@@ -70,8 +79,6 @@ BackNode.prototype.editor = {
     });
   },
   showEditableElements: function(listEditableContent, flagEditable){
-
-    
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
     
     var parent = this.parent;
@@ -97,9 +104,6 @@ BackNode.prototype.editor = {
       alert(flagEditable)
       $('.backnode-editzone').remove();
     }
-
-
-
     $(window).resize(function() {
       backNode.editor.getAllEditableElements();
     });
