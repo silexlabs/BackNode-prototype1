@@ -95,7 +95,7 @@ BackNode.prototype.editor = {
     for (key in listEditableContent)
       {
         var element = $(parent.document).find(listEditableContent[key]);
-        //console.log(element)
+        console.dir(element)
         //console.log(listEditableContent[key])
         if (element.length > 0){
           var top = element.offset().top;
@@ -123,7 +123,7 @@ BackNode.prototype.editor = {
 
         element.append(edit_zone);
         parent.editor.resizeOneElement(element);
-          
+      
         element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
@@ -136,6 +136,9 @@ BackNode.prototype.editor = {
         });
         element.keydown(function(){
             parent.editor.resizeEditableElements(listEditableContent);
+        });
+        element.focusout(function(){
+            $(this).children('.backnode-editzone').show();
         });
       }
     }
