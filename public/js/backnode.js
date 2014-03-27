@@ -22,13 +22,15 @@ BackNode.prototype.editor = {
     if (flagEditable === true)
     {
       for(key in listEditableContent)
-      {
+      {console.log(listEditableContent[key].tagName)
         switch(listEditableContent[key].tagName)
         {
           case "img":
           /*listener on picture click*/
+          
           $(parent.document).find(listEditableContent[key]).click(function(){
-            parent.editor.editPicture($(this));
+            
+            //parent.editor.editPicture($(this));
           });
           break;
           default:
@@ -172,7 +174,7 @@ BackNode.prototype.baliseSearch = {
         , hasTemplate = $item.closest("[data-bn='template']").length > 0 ? true : false
         ;
       if (!hasRepeat && !hasTemplate){
-        mainArray.push($item);
+        mainArray.push($item.get(0));
       }
     }
 
