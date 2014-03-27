@@ -45,8 +45,9 @@ BackNode.prototype.editor = {
         $(listEditableContent[key]).removeAttr('contenteditable');
       }
     }
-    // COMMING SOON
-    //parent.editor.showEditableElements(listEditableContent,flagEditable);
+    
+    //Call the function which colorize the editable zones
+    parent.editor.showEditableElements(listEditableContent,flagEditable);
     
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now*/
@@ -62,6 +63,8 @@ BackNode.prototype.editor = {
   resizeEditableElements: function(elem) {
     var top = elem.offset().top;
     var left = elem.offset().left;
+    //console.log(top)
+    //console.log(left)
 
     elem.children('.backnode-editzone').offset({top: top, left: left});
     elem.children('.backnode-editzone').css({width: elem.width(), height: elem.height()});
@@ -74,11 +77,12 @@ BackNode.prototype.editor = {
     {
       for (key in listEditableContent)
       {
-        console.log(listEditableContent[key])
+        //console.log(listEditableContent[key])
+        if (listEditableContent[key].length > 0){
+
         $(listEditableContent[key]).append(edit_zone);
-        if (listEditableContent[key] !== 'undefined'){
-            parent.editor.resizeEditableElements($(listEditableContent[key]));
-          }
+        parent.editor.resizeEditableElements($(listEditableContent[key]));
+          
         $(listEditableContent[key]).mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
@@ -88,9 +92,12 @@ BackNode.prototype.editor = {
         });
       }
     }
+    }
     else{
-      alert(flagEditable)
-      $('.backnode-editzone').remove();
+      for (key in listEditableContent)
+      {
+        $(listEditableContent[key]).children('.backnode-editzone').remove();
+      }
     }
   }
 }
