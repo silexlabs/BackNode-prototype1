@@ -95,47 +95,44 @@ BackNode.prototype.editor = {
   resizeOneElement: function(element){
           var top = element.offset().top;
           var left = element.offset().left;
-          //console.log(top)
-          //console.log(left)
 
           element.children('.backnode-editzone').offset({top: top, left: left});
           element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
         
   },
   resizeEditableElements: function(listEditableContent) {
-    //alert('test2')
+    //console.log(listEditableContent)
     for (key in listEditableContent)
       {
-        var element = $(parent.document).find(listEditableContent[key]);
-        console.log(element)
-        //console.dir(element)
-        //console.log(listEditableContent[key])
-        //if (element.length > 0){
+
+        var element = $(listEditableContent[key]);
+        
+        if (typeof listEditableContent[key].tagName !== 'undefined'){
+          
+
           var top = element.offset().top;
           var left = element.offset().left;
-          //console.log(top)
-          //console.log(left)
 
           element.children('.backnode-editzone').offset({top: top, left: left});
           element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
-        //}
+        }
       }
   },
   showEditableElements: function(listEditableContent, flagEditable){
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
-    
+
     var parent = this.parent;
     if (flagEditable === true)
     {
       for (key in listEditableContent)
       {
-        var element = $(parent.document).find(listEditableContent[key]);
-        //console.log(element);
-        //console.log(listEditableContent[key])
-        if (element.length > 0){
+        //var element = $(parent.document).find(listEditableContent[key]);
+        var element = $(listEditableContent[key]);
+
+
+        if (typeof listEditableContent[key].tagName !== 'undefined'){
 
         element.append(edit_zone);
-        parent.editor.resizeOneElement(element);
       
         element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
@@ -153,8 +150,18 @@ BackNode.prototype.editor = {
         element.focusout(function(){
             $(this).children('.backnode-editzone').show();
         });
+        $(parent.document).resize(function(){
+          alert('toto')
+        })
+        var iframe = $(this.parent.iframe.contentWindow);
+        iframe.bind('resize.backNodeEditor', function(){
+            parent.editor.resizeEditableElements(listEditableContent);
+        });
       }
     }
+
+    parent.editor.resizeEditableElements(listEditableContent);
+
     }
     else{
       for (key in listEditableContent)
@@ -163,7 +170,7 @@ BackNode.prototype.editor = {
         element.children('.backnode-editzone').remove();
       }
     }
-    parent.editor.resizeEditableElements(listEditableContent);
+    //parent.editor.resizeEditableElements(listEditableContent);
   }
 }
 

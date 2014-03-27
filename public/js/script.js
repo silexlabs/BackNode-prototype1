@@ -66,10 +66,10 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
-		backNode.editor.editable(backNode.baliseSeach.getList(backNode.document),false);
+		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.explorer.save(function(){
 			alert('File saved !');
-			backNode.editor.editable(backNode.baliseSeach.getList(backNode.document),true);
+			backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),true);
 		});
 	});
 
@@ -163,5 +163,4 @@ $(document).ready(function() {
 			});
 		}
 	}).resize();
-
 });
