@@ -1,174 +1,136 @@
-var activeResize = false;
-var oldIframeWidth = 1920;
-var oldIframeHeight = 1080;
+var BackNode = function(iframe) {
+	this.file = null;
+	this.iframe = iframe;
+	this.document = iframe.contentDocument;
+  this.editor.parent = this;
+  this.baliseSearch.parent = this;
+};
 
-$(document).ready(function() {
-	var $iframe = $('#iframe');
-	var $resizeIframe = $('#resize-iframe');
-	var $iframeContainer = $('#iframe-container');
-	var iframeWidthGap = ($('#resize-iframe').outerWidth() - $('#resize-iframe').width()) / 2;
-	var iframeHeightGap = ($('#resize-iframe').outerHeight() - $('#resize-iframe').height() + $('#resize-bar').height()) / 2;
+BackNode.prototype.explorer = {
+	pick: function(callback){
+		cloudExplorer.pick({}, function(data){
+			callback(data);
+			$('#tools ul li:not(#open)').show();
+	    $(window).resize();
+		});
+	},
 
-	window.backNode = new BackNode($iframe.get(0));
-
-	/* ------------------------------------------- */
-
-	function BNWindowResize(width, height, animate){
-		var x = ($iframeContainer.width() - width) / 2 - iframeWidthGap;
-		var y = ($iframeContainer.height() - height) / 2 - iframeHeightGap;
-		x = x >= 10 ? x : 10;
-		y = y >= 10 ? y : 10;
-		$resizeIframe.animate({
-				left: x,
-				right: x,
-				top: y,
-				bottom: y
-			}, {
-				duration: animate ? 250 : 0,
-				step: function(){
-					$('#iframe-width').text($iframe.width());
-					$('#iframe-height').text($iframe.height());
-					$iframe.height($resizeIframe.height() - 45);
-				},
-				complete: function(){
-					$('#iframe-width').text($iframe.width());
-					$('#iframe-height').text($iframe.height());
-					$iframe.height($resizeIframe.height() - 45);
-				}
-			});
+	save: function(callback){
+    callback = callback || function(){};
+    var iframe = $('iframe')[0].contentDocument;
+    var serializer = new XMLSerializer();
+    var content = serializer.serializeToString(doc);
+    cloudExplorer.write(backNode.file, content, callback);
 	}
+};
+BackNode.prototype.editor = {
+  /*This method allow the user to modify the "data-bn" elements if flagEditable is true. It do the contrary if flagEditable is false */
+  editable: function(listEditableContent, flagEditable) {
+    var parent = this.parent;
+    if (flagEditable === true)
+    {
+      /*Need to be uncomment to allow the pictures modification*/
+      /*$(parent.document).on('click', "img", function() {
+        parent.editor.editPicture($(this));
+      });*/
+      for (key in listEditableContent)
+      {
+        switch(listEditableContent[key].tagName)
+        {
+          case "img":
+            /*maybe we could put something here but we don't have to at this time*/
+          break;
+          default:
+            $(listEditableContent[key]).attr('contenteditable', 'true');
+          break;
+        }
+      }
+    }
+    else
+    {
+      for (key in listEditableContent)
+      {
+        $(listEditableContent[key]).removeAttr('contenteditable');
+      }
+    }
+    // COMMING SOON
+    //parent.editor.showEditableElements(listEditableContent,flagEditable);
+    
+  },/* This method allow the user to modify a picture ( alt and src attribute ) */
+  editPicture: function(picture) {/*need to be modified, doesn't active now*/
+      $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
+      $('#popinPicture').slideDown(400, function() {
+        $('#popinPicture').on("click", "span", function() {
+          picture.attr('src', $('.backNode-imgSrc').html());
+          picture.attr('alt', $('.backNode-imgAlt').html());
+          $('#popinPicture').slideUp(400);
+        });
+      });
+  },
+  resizeEditableElements: function(elem) {
+    var top = elem.offset().top;
+    var left = elem.offset().left;
 
-	/* -------------------------------------------- */
+    elem.children('.backnode-editzone').offset({top: top, left: left});
+    elem.children('.backnode-editzone').css({width: elem.width(), height: elem.height()});
+  },
+  showEditableElements: function(listEditableContent, flagEditable){
+    var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
+    
+    var parent = this.parent;
+    if (flagEditable === true)
+    {
+      for (key in listEditableContent)
+      {
+        console.log(listEditableContent[key])
+        $(listEditableContent[key]).append(edit_zone);
+        if (listEditableContent[key] !== 'undefined'){
+            parent.editor.resizeEditableElements($(listEditableContent[key]));
+          }
+        $(listEditableContent[key]).mouseenter(function() {
+            $(this).children('.backnode-editzone').hide();
+        });
+        $(listEditableContent[key]).mouseleave(function() {
+            if ($(this).is(":focus") === false)
+            $(this).children('.backnode-editzone').show();
+        });
+      }
+    }
+    else{
+      alert(flagEditable)
+      $('.backnode-editzone').remove();
+    }
+  }
+}
 
-	// Click on "Edit mode" & Switching between On and Off
-	$('#tools #editor').click(function() {
-		$(this).toggleClass('switch-on');
-		backNode.editor.editable(backNode.baliseSearch.getList(), $(this).hasClass('switch-on'));
-	});
-
-	// Click on open
-	$('#tools #open').click(function() {
-		backNode.explorer.pick(function(file) {
-			if(file.mimetype == 'text/html') {
-				backNode.file = file;
-				$(backNode.iframe).attr('src', file.url).load(function(){
-					backNode.document = this.contentDocument;
+BackNode.prototype.baliseSearch = {
+	getList: function(document) {
+		var list = [];
+		$(document).find('[data-bn]').each(function() {
+			if($(this).parents('[data-bn="template"], [data-bn="repeat"]').size() > 0) {
+				return;
+			} else if($(this).data('bn') == 'template') {
+				var subTemplate = {
+					type: 'template',
+					DOM: this,
+					repeats: []
+				};
+				$(this).find('[data-bn="repeat"]').each(function() {
+					var subRepeat = {
+						type: 'repeat',
+						DOM: this,
+						edit: []
+					};
+					$(this).find('[data-bn="edit"]').each(function() {
+						subRepeat.edit.push(this);
+					});
+					subTemplate.repeats.push(subRepeat);
 				});
+				list.push(subTemplate);
 			} else {
-				alert('Invalid extension !');
+				list.push(this);
 			}
 		});
-	});
-
-	// Click on save
-	$('#tools #save').click(function() {
-		if(backNode.file === null) {
-			alert('No file chosen !');
-			return;
-		}
-
-		backNode.editor.editable(backNode.baliseSearch.getList(),false);
-		backNode.explorer.save(function(){
-			alert('File saved !');
-			backNode.editor.editable(backNode.baliseSearch.getList(),true);
-		});
-	});
-
-	// Enable resize window
-	$('body').mousedown(function(evt){
-		activeResize = $(evt.target).is($('#resize-icon'));
-	}).mouseup(function(){
-		activeResize = false;
-	});
-
-	// Resizing window
-	$('body').mousemove(function(evt){
-		if(!activeResize) return;
-		var x = $iframeContainer.width() - evt.pageX + $iframeContainer.offset().left - 5;
-		var y = $iframeContainer.height() - evt.pageY - $iframeContainer.offset().top - 5;
-		var minX = $iframeContainer.width() / 2 - 105;
-		var minY = $iframeContainer.height() / 2 - 105;
-		x = x <= minX ? x : minX;
-		y = y <= minY ? y : minY;
-		x = x >= 10 ? x : 10;
-		y = y >= 10 ? y : 10;
-		$resizeIframe.css({
-			left: x,
-			right: x,
-			top: y,
-			bottom: y
-		});
-		$iframe.height($resizeIframe.height() - 45);
-		$('#iframe-width').text($iframe.width());
-		$('#iframe-height').text($iframe.height());
-		oldIframeWidth = $iframe.width();
-		oldIframeHeight = $iframe.height();
-	});
-
-	// Click on presets menu -> Show presets
-	$('#resolution').click(function(){
-		$('#resolution-presets').stop().slideToggle(200);
-	});
-
-	// Click on a preset resolution -> Resize window
-	$('#resolution-presets li').click(function(){
-		BNWindowResize($(this).data('width'), $(this).data('height'), true);
-	});
-
-	// Click on body -> Hide presets menu if opened
-	$('body').click(function(evt){
-		if(!$(evt.target).is($('#resolution, #resolution span, #resolution i')))
-			$('#resolution-presets').slideUp(200);
-	});
-
-	$(backNode.iframe.contentWindow).resize(function(){
-		//alert('test')
-		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList());
-	});
-
-	// When window is resized
-	$(window).resize(function(){
-		// Keep the same BNWindow resolution
-		BNWindowResize(oldIframeWidth, oldIframeHeight);
-
-		// Store the BNWindow resolution
-		oldIframeWidth = $iframe.width();
-		oldIframeHeight = $iframe.height();
-
-		$iframe.height($resizeIframe.height() - 45);
-		if($resizeIframe.width() < 200) {
-			$resizeIframe.css({
-				left: $iframeContainer.width() / 2 - 105,
-				right: $iframeContainer.width() / 2 - 105
-			});
-		}
-
-		if($resizeIframe.height() < 200) {
-			$resizeIframe.css({
-				top: $iframeContainer.height() / 2 - 105,
-				bottom: $iframeContainer.height() / 2 - 105
-			});
-		}
-
-		$('#iframe-width').text($iframe.width());
-		$('#iframe-height').text($iframe.height());
-		$('#tools').height($(window).height());
-		$('#CE').css({ marginLeft: -($('#CE').width()/2), marginTop: -($('#CE').height()/2) });
-		var bgrHeight = $(window).height() - $('#menu-wrapper').height() - 110;
-		if(bgrHeight > 200) {			
-			$('#tools #background').stop().fadeIn().css({
-				backgroundImage: "url('../img/backnode.png')",
-				height: bgrHeight
-			});
-		} else if(bgrHeight < 50) {
-			$('#tools #background').stop().fadeOut(50);
-		} else {
-			$('#tools #background').stop().fadeIn().css({
-				backgroundImage: "url('../img/logo.png')",
-				height: 86
-			});
-		}
-		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList(),true);
-	}).resize();
-
-});
+		return list;
+	}
+};
