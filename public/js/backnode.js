@@ -19,7 +19,7 @@ BackNode.prototype.explorer = {
     callback = callback || function(){};
     var iframe = $('iframe')[0].contentDocument;
     var serializer = new XMLSerializer();
-    var content = serializer.serializeToString(doc);
+    var content = serializer.serializeToString(iframe);
     cloudExplorer.write(backNode.file, content, callback);
 	}
 };
