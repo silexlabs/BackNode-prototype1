@@ -121,6 +121,11 @@ $(document).ready(function() {
 			$('#resolution-presets').slideUp(200);
 	});
 
+	$(backNode.iframe.contentWindow).resize(function(){
+		//alert('test')
+		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList());
+	});
+
 	// When window is resized
 	$(window).resize(function(){
 		// Keep the same BNWindow resolution
