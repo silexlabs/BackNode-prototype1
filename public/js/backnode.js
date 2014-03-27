@@ -164,7 +164,7 @@ BackNode.prototype.baliseSearch = {
         , hasTemplate = $item.closest("[data-bn='template']").length > 0 ? true : false
         ;
       if (!hasRepeat && !hasTemplate){
-        mainArray.push($item);
+        mainArray.push($item.get(0));
       }
     }
 
