@@ -23,9 +23,9 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
-		backNode.editor.editable(backNode.baliseSeach.getList(),false);
+		backNode.editor.editable(backNode.baliseSearch.getList(),false);
 		backNode.explorer.save(backNode.file.url, $(backNode.document).html());
-		backNode.editor.editable(backNode.baliseSeach.getList(),true);
+		backNode.editor.editable(backNode.baliseSearch.getList(),true);
 	});
 	$(window).resize(function() {
 		$('#iframe').width($(window).width()-$('#tools').width());
@@ -46,5 +46,6 @@ $(document).ready(function() {
 				height: 86
 			});
 		}
+		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList(),true);
 	}).resize();
 });

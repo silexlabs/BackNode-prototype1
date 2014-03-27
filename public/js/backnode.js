@@ -72,14 +72,31 @@ BackNode.prototype.editor = {
         });
       });
   },
-  resizeEditableElements: function(elem) {
-    var top = elem.offset().top;
-    var left = elem.offset().left;
-    //console.log(top)
-    //console.log(left)
+  resizeOneElement: function(element){
+          var top = element.offset().top;
+          var left = element.offset().left;
+          //console.log(top)
+          //console.log(left)
 
-    elem.children('.backnode-editzone').offset({top: top, left: left});
-    elem.children('.backnode-editzone').css({width: elem.width(), height: elem.height()});
+          element.children('.backnode-editzone').offset({top: top, left: left});
+          element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
+        
+  },
+  resizeEditableElements: function(listEditableContent) {
+
+    for (key in listEditableContent)
+      {
+        //console.log(listEditableContent[key])
+        if (listEditableContent[key].length > 0){
+          var top = $(listEditableContent[key]).offset().top;
+          var left = $(listEditableContent[key]).offset().left;
+          //console.log(top)
+          //console.log(left)
+
+          $(listEditableContent[key]).children('.backnode-editzone').offset({top: top, left: left});
+          $(listEditableContent[key]).children('.backnode-editzone').css({width: $(listEditableContent[key]).width(), height: $(listEditableContent[key]).height()});
+        }
+      }
   },
   showEditableElements: function(listEditableContent, flagEditable){
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
@@ -93,7 +110,7 @@ BackNode.prototype.editor = {
         if (listEditableContent[key].length > 0){
 
         $(listEditableContent[key]).append(edit_zone);
-        parent.editor.resizeEditableElements($(listEditableContent[key]));
+        //parent.editor.resizeEditableElements($(listEditableContent[key]));
           
         $(listEditableContent[key]).mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
@@ -101,6 +118,12 @@ BackNode.prototype.editor = {
         $(listEditableContent[key]).mouseleave(function() {
             if ($(this).is(":focus") === false)
             $(this).children('.backnode-editzone').show();
+        });
+        $(listEditableContent[key]).keyup(function(){
+            parent.editor.resizeEditableElements($(listEditableContent[key]));
+        });
+        $(listEditableContent[key]).keydown(function(){
+            parent.editor.resizeEditableElements($(listEditableContent[key]));
         });
       }
     }
@@ -111,6 +134,7 @@ BackNode.prototype.editor = {
         $(listEditableContent[key]).children('.backnode-editzone').remove();
       }
     }
+    parent.editor.resizeEditableElements(listEditableContent);
   }
 }
 
