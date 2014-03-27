@@ -29,50 +29,97 @@ BackNode.prototype.editor = {
     var parent = this.parent;
     if (flagEditable === true)
     {
-      /*Need to be uncomment to allow the pictures modification*/
-      /*$(parent.document).on('click', "img", function() {
-        parent.editor.editPicture($(this));
-      });*/
-      for (key in listEditableContent)
+      for(key in listEditableContent)
       {
         switch(listEditableContent[key].tagName)
         {
-          case "img":
-            /*maybe we could put something here but we don't have to at this time*/
+          case "IMG":
+          /*listener on picture click*/
+          $(listEditableContent[key]).click(function(){
+            parent.editor.editPicture($(this));
+          });
           break;
           default:
-            $(listEditableContent[key]).attr('contenteditable', 'true');
+            if($(listEditableContent[key]).length > 0)
+            {
+              $(listEditableContent[key]).attr('contenteditable', 'true');
+            }
           break;
         }
       }
     }
+    /*This function disallow the edition of elements*/
     else
     {
+      /*remove the picture popin if needed*/
+      $(parent.document).find('#bn-popinPicture').remove();
       for (key in listEditableContent)
       {
-        $(listEditableContent[key]).removeAttr('contenteditable');
+        if(listEditableContent[key].tagName == "IMG")
+        {
+          $(listEditableContent[key]).unbind("click");
+        }
+        else
+        {
+          $(listEditableContent[key]).removeAttr('contenteditable');
+        }
       }
     }
-    // COMMING SOON
-    //parent.editor.showEditableElements(listEditableContent,flagEditable);
+    
+    //Call the function which colorize the editable zones
+    parent.editor.showEditableElements(listEditableContent,flagEditable);
     
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
-  editPicture: function(picture) {/*need to be modified, doesn't active now*/
-      $('#popinPicture').append('<div style="width:500px;height:500px;text-align:center;background:#ddd;position:absolute;left:50%;top:50%;margin:-250px 0 0 -250px"><div style="padding:5px;margin-bottom:20px;background-color:#222;color:#eaeaea;display:block;text-align:right"><span style="cursor:pointer;">Fermer X</span></div><p style="margin-left:20px;margin-bottom:20px;display:inline-block;width:150px;text-align:left;">Picture link</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('src') + '</p><div><p style="width:150px;text-align:left;margin-left:20px;margin-bottom:20px;display:inline-block;">Alternative Text</p><p class="backNode-imgSrc" contenteditable="true" style="display:inline-block;margin-left:20px;margin-right:20px;margin-bottom:20px;width:200px;background-color:#fff">' + picture.attr('alt') + '</p></div></div>');
-      $('#popinPicture').slideDown(400, function() {
-        $('#popinPicture').on("click", "span", function() {
-          picture.attr('src', $('.backNode-imgSrc').html());
-          picture.attr('alt', $('.backNode-imgAlt').html());
-          $('#popinPicture').slideUp(400);
+  editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
+      var iframe = $(this.parent.document);
+      var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10000;width:100%;height:100%;top:0;left:0;background:#000;background:rgba(0,0,0,0.8)"></div>';
+      var contentPopinpicture = '<form name="bn-picForm" style="border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;box-shadow:2px 2px 1px #000;width:400px;height:200px;text-align:center;background:#eee;position:absolute;left:50%;top:50%;margin:-100px 0 0 -200px"><div style="padding:5px;margin-bottom:20px;color:#000;display:block;text-align:center">Import your file<span style="cursor:pointer;position:absolute;top:0;right:0"><img src="'+ document.URL +'img/close-pic.png" alt="X" /></span></div><div><label for="bn-picSrc">Src attribute</label><input id="bn-picSrc" type="text" name="picSrc" value="'+ picture.attr('src') +'" /></div><div><label for="bn-picAlt">Alt attribute</label><input id="bn-picAlt" type="text" name="picAlt" value="'+ picture.attr('alt') +'" /></div><button id="bn-picUpload">Upload a file</button><button id="bn-valid">Valid</button</div>';
+      iframe.find("body").append(popinpicture);
+      iframe.find('#bn-popinPicture').append(contentPopinpicture);
+      iframe.find('#bn-popinPicture').slideDown(400, function() {
+        iframe.find('#bn-popinPicture form #bn-valid').click(function(e) {
+          e.preventDefault();
+          picture.attr('src', iframe.find('#bn-picSrc').val());
+          picture.attr('alt', iframe.find('#bn-picAlt').val());
+          iframe.find('#bn-popinPicture').slideUp(400,function(){
+            iframe.find('#bn-popinPicture').remove();
+          });
+        });
+        iframe.find('#bn-popinPicture form div span').click(function(){
+          iframe.find('#bn-popinPicture').slideUp(400,function(){
+            iframe.find('#bn-popinPicture').remove();
+          });
         });
       });
   },
-  resizeEditableElements: function(elem) {
-    var top = elem.offset().top;
-    var left = elem.offset().left;
+  resizeOneElement: function(element){
+          var top = element.offset().top;
+          var left = element.offset().left;
+          //console.log(top)
+          //console.log(left)
 
-    elem.children('.backnode-editzone').offset({top: top, left: left});
-    elem.children('.backnode-editzone').css({width: elem.width(), height: elem.height()});
+          element.children('.backnode-editzone').offset({top: top, left: left});
+          element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
+        
+  },
+  resizeEditableElements: function(listEditableContent) {
+    //alert('test2')
+    for (key in listEditableContent)
+      {
+        var element = $(parent.document).find(listEditableContent[key]);
+        console.log(element)
+        //console.dir(element)
+        //console.log(listEditableContent[key])
+        //if (element.length > 0){
+          var top = element.offset().top;
+          var left = element.offset().left;
+          //console.log(top)
+          //console.log(left)
+
+          element.children('.backnode-editzone').offset({top: top, left: left});
+          element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
+        //}
+      }
   },
   showEditableElements: function(listEditableContent, flagEditable){
     var edit_zone = '<div style="background:#d6ffa0;border:1px solid grey;position:absolute;opacity:0.3" class="backnode-editzone"></div>';
@@ -82,24 +129,41 @@ BackNode.prototype.editor = {
     {
       for (key in listEditableContent)
       {
-        console.log(listEditableContent[key])
-        $(listEditableContent[key]).append(edit_zone);
-        if (listEditableContent[key] !== 'undefined'){
-            parent.editor.resizeEditableElements($(listEditableContent[key]));
-          }
-        $(listEditableContent[key]).mouseenter(function() {
+        var element = $(parent.document).find(listEditableContent[key]);
+        //console.log(element);
+        //console.log(listEditableContent[key])
+        if (element.length > 0){
+
+        element.append(edit_zone);
+        parent.editor.resizeOneElement(element);
+      
+        element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
-        $(listEditableContent[key]).mouseleave(function() {
+        element.mouseleave(function() {
             if ($(this).is(":focus") === false)
+            $(this).children('.backnode-editzone').show();
+        });
+        element.keyup(function(){
+            parent.editor.resizeEditableElements(listEditableContent);
+        });
+        element.keydown(function(){
+            parent.editor.resizeEditableElements(listEditableContent);
+        });
+        element.focusout(function(){
             $(this).children('.backnode-editzone').show();
         });
       }
     }
-    else{
-      alert(flagEditable)
-      $('.backnode-editzone').remove();
     }
+    else{
+      for (key in listEditableContent)
+      {
+        var element = $(parent.document).find(listEditableContent[key]);
+        element.children('.backnode-editzone').remove();
+      }
+    }
+    parent.editor.resizeEditableElements(listEditableContent);
   }
 }
 

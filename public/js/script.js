@@ -66,10 +66,11 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
-		backNode.editor.editable(backNode.baliseSeach.getList(),false);
+
+		backNode.editor.editable(backNode.baliseSearch.getList(),false);
 		backNode.explorer.save(function(){
 			alert('File saved !');
-			backNode.editor.editable(backNode.baliseSeach.getList(),true);
+			backNode.editor.editable(backNode.baliseSearch.getList(),true);
 		});
 	});
 
@@ -120,6 +121,11 @@ $(document).ready(function() {
 			$('#resolution-presets').slideUp(200);
 	});
 
+	$(backNode.iframe.contentWindow).resize(function(){
+		//alert('test')
+		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList());
+	});
+
 	// When window is resized
 	$(window).resize(function(){
 		// Keep the same BNWindow resolution
@@ -162,6 +168,7 @@ $(document).ready(function() {
 				height: 86
 			});
 		}
+		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList(),true);
 	}).resize();
 
 });
