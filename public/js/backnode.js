@@ -174,85 +174,34 @@ BackNode.prototype.editor = {
   }
 }
 
-
 BackNode.prototype.baliseSearch = {
-
-  getList: function(){
-    window.test = $(this.parent.document).find('html');
-    var $dataEdit       = $(this.parent.document).find('[data-bn="edit"]')
-      , $dataRepeat     = $(this.parent.document).find("[data-bn='repeat']")
-      , $dataTemplate   = $(this.parent.document).find("[data-bn='template']")
-
-      ,  mainArray          = []
-      ,  dataSoloEditArray  = []
-      ,  dataTemplateArray  = []
-    ;
-
-    var checkTemplate = function($template, templateArray){
-
-      var $dataBnEdit   = $template.find("[data-bn='edit']")
-        , $dataBnRepeat = $template.find("[data-bn='repeat']")
-        ;
-
-      // for each data-bn="edit" in the template
-
-      for (i=0, j=$dataBnEdit.length; i<j; i++) {
-        var $item = $dataBnEdit.eq(i)
-          , hasRepeat = $item.closest("[data-bn='repeat']").length > 0 ? true : false
-          ;
-
-        // if the data-bn="edit" isn't in a data-bn="repeat"
-        // push it in the racine of the template array
-
-        if (!hasRepeat)
-          templateArray.push($item);
-      }
-
-      checkRepeat($dataBnRepeat, templateArray);
-    }
-
-    var checkRepeat = function($repeat, templateArray){
-
-      var repeatArray = [];
-
-      for (i=0, j=$repeat.length; i<j; i++){
-        var $current = $repeat.eq(i)
-          , $dataBnEdit = $current.find("[data-bn='edit']")
-          ;
-        repeatArray.push($dataBnEdit);
-      }
-      templateArray.push(repeatArray);
-      dataTemplateArray.push(templateArray);
-      templateArray = [];
-    }
-    
-
-    // push solo data-bn="edit" in the mainArray
-    for (i=0, j=$dataEdit.length; i<j; i++){
-
-      var $item       = $dataEdit.eq(i)
-        , hasRepeat   = $item.closest("[data-bn='repeat']").length > 0 ? true : false
-        , hasTemplate = $item.closest("[data-bn='template']").length > 0 ? true : false
-        ;
-      if (!hasRepeat && !hasTemplate){
-        mainArray.push($item.get(0));
-      }
-    }
-
-
-    // for each data-bn="template"
-
-    for (a=0, b=$dataTemplate.length; a<b; a++){
-      var $template     = $dataTemplate.eq(a)
-        , templateArray = []
-      ;
-
-      checkTemplate($template, templateArray);
-    }
-    
-    mainArray.push(dataTemplateArray);
-    
-    return mainArray;
-
-  }
+	getList: function(document) {
+		var list = [];
+		$(document).find('[data-bn]').each(function() {
+			if($(this).parents('[data-bn="template"], [data-bn="repeat"]').size() > 0) {
+				return;
+			} else if($(this).data('bn') == 'template') {
+				var subTemplate = {
+					type: 'template',
+					DOM: this,
+					repeats: []
+				};
+				$(this).find('[data-bn="repeat"]').each(function() {
+					var subRepeat = {
+						type: 'repeat',
+						DOM: this,
+						edit: []
+					};
+					$(this).find('[data-bn="edit"]').each(function() {
+						subRepeat.edit.push(this);
+					});
+					subTemplate.repeats.push(subRepeat);
+				});
+				list.push(subTemplate);
+			} else {
+				list.push(this);
+			}
+		});
+		return list;
+	}
 };

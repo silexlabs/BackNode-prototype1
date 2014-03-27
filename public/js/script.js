@@ -163,7 +163,6 @@ $(document).ready(function() {
 				height: 86
 			});
 		}
-		
 	}).resize();
 
 });
