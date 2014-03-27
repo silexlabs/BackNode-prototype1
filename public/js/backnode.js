@@ -103,7 +103,7 @@ BackNode.prototype.editor = {
         
   },
   resizeEditableElements: function(listEditableContent) {
-    alert('test2')
+    //alert('test2')
     for (key in listEditableContent)
       {
         var element = $(parent.document).find(listEditableContent[key]);

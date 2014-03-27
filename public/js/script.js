@@ -122,7 +122,7 @@ $(document).ready(function() {
 	});
 
 	$(backNode.iframe.contentWindow).resize(function(){
-		alert('test')
+		//alert('test')
 		backNode.editor.resizeEditableElements(backNode.baliseSearch.getList());
 	});
 
