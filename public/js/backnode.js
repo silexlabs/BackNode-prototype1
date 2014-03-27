@@ -106,7 +106,7 @@ BackNode.prototype.editor = {
     //alert('test2')
     for (key in listEditableContent)
       {
-        var element = $(parent.document).find(listEditableContent[key]);
+        var element = $(listEditableContent[key]);
         console.log(element)
         //console.dir(element)
         //console.log(listEditableContent[key])
@@ -163,7 +163,7 @@ BackNode.prototype.editor = {
         element.children('.backnode-editzone').remove();
       }
     }
-    parent.editor.resizeEditableElements(listEditableContent);
+    //parent.editor.resizeEditableElements(listEditableContent);
   }
 }
 
