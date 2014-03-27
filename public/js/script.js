@@ -4,7 +4,7 @@ $(document).ready(function() {
 
 	$('#tools #editor').click(function() {
 		$(this).toggleClass('switch-on');
-		backNode.editor.editable(backNode.baliseSearch.getList(), true);
+		backNode.editor.editable(backNode.baliseSearch.getList(), $(this).hasClass('switch-on'));
 	});
 	$('#tools #open').click(function() {
 		backNode.explorer.pick(function(file) {

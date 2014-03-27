@@ -22,19 +22,20 @@ BackNode.prototype.editor = {
     if (flagEditable === true)
     {
       for(key in listEditableContent)
-      {console.log(listEditableContent[key].tagName)
+      {
         switch(listEditableContent[key].tagName)
         {
           case "img":
           /*listener on picture click*/
-          
           $(parent.document).find(listEditableContent[key]).click(function(){
-            
-            //parent.editor.editPicture($(this));
+            parent.editor.editPicture($(this));
           });
           break;
           default:
-            $(listEditableContent[key]).attr('contenteditable', 'true');
+            if($(listEditableContent[key]).length > 0)
+            {
+              $(listEditableContent[key]).attr('contenteditable', 'true');
+            }
           break;
         }
       }
@@ -46,7 +47,7 @@ BackNode.prototype.editor = {
       {
         if(listEditableContent[key].tagName == "img")
         {
-          $(parent.document).off();
+          $(parent.document).find(listEditableContent[key]).unbind("click");
         }
         else
         {
