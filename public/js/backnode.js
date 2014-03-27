@@ -8,11 +8,19 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
-		cloudExplorer.pick({}, callback);
+		cloudExplorer.pick({}, function(data){
+			callback(data);
+			$('#tools ul li:not(#open)').show();
+	    $(window).resize();
+		});
 	},
 
-	save: function(){
-
+	save: function(callback){
+    callback = callback || function(){};
+    var iframe = $('iframe')[0].contentDocument;
+    var serializer = new XMLSerializer();
+    var content = serializer.serializeToString(iframe);
+    cloudExplorer.write(backNode.file, content, callback);
 	}
 };
 BackNode.prototype.editor = {
@@ -98,15 +106,17 @@ BackNode.prototype.editor = {
 
     for (key in listEditableContent)
       {
+        var element = $(parent.document).find(listEditableContent[key]);
+        console.dir(element)
         //console.log(listEditableContent[key])
-        if (listEditableContent[key].length > 0){
-          var top = $(listEditableContent[key]).offset().top;
-          var left = $(listEditableContent[key]).offset().left;
+        if (element.length > 0){
+          var top = element.offset().top;
+          var left = element.offset().left;
           //console.log(top)
           //console.log(left)
 
-          $(listEditableContent[key]).children('.backnode-editzone').offset({top: top, left: left});
-          $(listEditableContent[key]).children('.backnode-editzone').css({width: $(listEditableContent[key]).width(), height: $(listEditableContent[key]).height()});
+          element.children('.backnode-editzone').offset({top: top, left: left});
+          element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
         }
       }
   },
@@ -118,24 +128,29 @@ BackNode.prototype.editor = {
     {
       for (key in listEditableContent)
       {
+        var element = $(parent.document).find(listEditableContent[key]);
+        //console.log(element);
         //console.log(listEditableContent[key])
-        if (listEditableContent[key].length > 0){
+        if (element.length > 0){
 
-        $(listEditableContent[key]).append(edit_zone);
-        //parent.editor.resizeEditableElements($(listEditableContent[key]));
-          
-        $(listEditableContent[key]).mouseenter(function() {
+        element.append(edit_zone);
+        parent.editor.resizeOneElement(element);
+      
+        element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
-        $(listEditableContent[key]).mouseleave(function() {
+        element.mouseleave(function() {
             if ($(this).is(":focus") === false)
             $(this).children('.backnode-editzone').show();
         });
-        $(listEditableContent[key]).keyup(function(){
-            parent.editor.resizeEditableElements($(listEditableContent[key]));
+        element.keyup(function(){
+            parent.editor.resizeEditableElements(listEditableContent);
         });
-        $(listEditableContent[key]).keydown(function(){
-            parent.editor.resizeEditableElements($(listEditableContent[key]));
+        element.keydown(function(){
+            parent.editor.resizeEditableElements(listEditableContent);
+        });
+        element.focusout(function(){
+            $(this).children('.backnode-editzone').show();
         });
       }
     }
@@ -143,7 +158,8 @@ BackNode.prototype.editor = {
     else{
       for (key in listEditableContent)
       {
-        $(listEditableContent[key]).children('.backnode-editzone').remove();
+        var element = $(parent.document).find(listEditableContent[key]);
+        element.children('.backnode-editzone').remove();
       }
     }
     parent.editor.resizeEditableElements(listEditableContent);
