@@ -3,6 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>BackNode</title>
+
+	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
 	
 	<link rel="stylesheet" href="./css/normalize.css">
 	<link rel="stylesheet" href="./css/font-awesome.min.css">
@@ -10,13 +12,27 @@
 	<link rel="stylesheet" href="./cloud-explorer/css/style.css">
 	
 	<script src="./js/jquery.min.js"></script>
-	<script src="./js/angular.min.js"></script>
-	<script src="./js/angular-resource.min.js"></script>
-	<script src="./js/backnode.js"></script>
-	<script src="./cloud-explorer/js/cloud-explorer.js"></script>
 	<script src="./js/script.js"></script>
 </head>
 <body>
+	<div id="tutorial">
+		<div id="click-continue">Click to continue...</div>
+		<div id="tuto-toolbar"></div>
+		<div style="z-index: 20;" id="tuto-step0"></div>
+		<div style="z-index: 30;" id="tuto-step1"></div>
+		<div style="z-index: 40;" id="tuto-step2"></div>
+		<div style="z-index: 50;" id="tuto-step3"></div>
+	</div>
+
+	<div id="loader">
+		<div id="loader-container">
+			<div id="loader-empty"></div>
+			<div id="loader-fill"></div>
+		</div>
+	</div>
+
+	<div id="dark-bgr"></div>
+
 	<div id="tools">
 		<div id="menu-wrapper">
 			Mode <span class="bold">édition</span> :
@@ -25,8 +41,8 @@
 				<li id="open"><i class="fa fa-upload"></i> Import file</li>
 				<li><i class="fa fa-reply"></i> Cancel</li>
 				<li><i class="fa fa-eye"></i> Preview</li>
-				<li><i class="fa fa-tablet"></i> Responsive</li>
 				<li id="save"><i class="fa fa-save"></i> Save</li>
+				<li id="responsize"><a href="#"><div id="logo-responsize"></div> Responsize</a></li>
 			</ul>
 			<div id="background"></div>
 		</div>
@@ -56,5 +72,10 @@
 	<div id="CE" ng-app="ceDirectives">
 		<div class="ce-browser"></div>
 	</div>
+
+	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()"></script>
+	<script src="./js/backnode.js"></script>
+	<script src="./cloud-explorer/js/cloud-explorer.js"></script>
 </body>
 </html>
