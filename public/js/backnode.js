@@ -150,9 +150,6 @@ BackNode.prototype.editor = {
         element.focusout(function(){
             $(this).children('.backnode-editzone').show();
         });
-        $(parent.document).resize(function(){
-          alert('toto')
-        })
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
             parent.editor.resizeEditableElements(listEditableContent);
