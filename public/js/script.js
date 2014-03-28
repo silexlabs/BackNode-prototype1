@@ -79,7 +79,7 @@ $(document).ready(function() {
 	// Click on "Edit mode" & Switching between On and Off
 	$('#tools #editor').click(function() {
 		$(this).toggleClass('switch-on');
-		backNode.editor.editable(backNode.baliseSearch.getList(), $(this).hasClass('switch-on'));
+		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document), $(this).hasClass('switch-on'));
 	});
 
 	// Click on open
@@ -102,10 +102,10 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
-		backNode.editor.editable(backNode.baliseSearch.getList(),false);
+		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.explorer.save(function(){
 			alert('File saved !');
-			backNode.editor.editable(backNode.baliseSearch.getList(),true);
+			backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),true);
 		});
 	});
 
