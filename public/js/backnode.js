@@ -8,10 +8,12 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
-		cloudExplorer.pick({}, function(data){
-			callback(data);
-			$('#tools ul li:not(#open)').show();
-	    $(window).resize();
+    $('#dark-bgr').show();
+    cloudExplorer.pick({}, function(data){
+      callback(data);
+      $('#tools ul li:not(#open)').show();
+      $(window).resize();
+      $('#dark-bgr').hide();
 		});
 	},
 
@@ -170,8 +172,12 @@ BackNode.prototype.editor = {
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
           waitForFinalEvent(function(){
+<<<<<<< HEAD
+=======
+            
+>>>>>>> 8b32176a73b28eb35911af3ae6a520191225e083
             parent.editor.resizeEditableElements(listEditableContent);
-          }, 500, "some unique string");
+          }, 500, "");
             
         });
       }
