@@ -72,12 +72,15 @@ BackNode.prototype.editor = {
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
       var iframe = $(this.parent.document);
-      var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10000;width:100%;height:100%;top:0;left:0;background:#000;background:rgba(0,0,0,0.8)"></div>';
-      var contentPopinpicture = '<form name="bn-picForm" style="border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;box-shadow:2px 2px 1px #000;width:400px;height:200px;text-align:center;background:#eee;position:absolute;left:50%;top:50%;margin:-100px 0 0 -200px"><div style="padding:5px;margin-bottom:20px;color:#000;display:block;text-align:center">Import your file<span style="cursor:pointer;position:absolute;top:0;right:0"><img src="'+ document.URL +'img/close-pic.png" alt="X" /></span></div><div><label for="bn-picSrc">Src attribute</label><input id="bn-picSrc" type="text" name="picSrc" value="'+ picture.attr('src') +'" /></div><div><label for="bn-picAlt">Alt attribute</label><input id="bn-picAlt" type="text" name="picAlt" value="'+ picture.attr('alt') +'" /></div><button id="bn-picUpload">Upload a file</button><button id="bn-valid">Valid</button</div>';
+      var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10000;width:100%;height:100%;top:-15px;left:-15px;background:#000;background:rgba(0,0,0,0.8)"></div>';
+      var alt = picture.attr('alt');
+      if(alt === undefined)
+        alt ="";
+      var contentPopinpicture = '<div name="bn-picForm" style="border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;box-shadow:2px 2px 1px #000;width:410px;height:200px;text-align:center;background:#eee;position:absolute;left:50%;top:50%;margin:-100px 0 0 -205px"><div style="padding:5px;margin-top:10px;margin-bottom:10px;color:#000;display:block;text-align:center"><img src="'+ document.URL +'img/import-title.png" alt="Import your file" style="width:50%;" /><span style="cursor:pointer;position:absolute;top:-15px;right:-15px;"><img src="'+ document.URL +'img/close-pic.png" alt="X" /></span></div><div style="height:35px;overflow:hidden;line-height:35px;margin-left:10px;"><label for="bn-picSrc" style="height:100%;float:left;margin-right:10px;">Src attribute</label><input id="bn-picSrc" type="text" name="picSrc" placeholder="Url" value="'+ picture.attr('src') +'" style="border:1px solid #ccc;padding-left:5px;box-sizing:border-box;height:100%;float:left;margin-right:0;border-radius:3px 0 0 3px;" /><img id="bn-picUpload" src="'+ document.URL +'img/import-btn.png" alt="Import a file" style="height:100%;float:left;" /></div><div style="height:35px;overflow:hidden;line-height:35px;margin:10px 0 0 10px;"><label for="bn-picAlt" style="height:100%;float:left;margin-right:10px;">Alt attribute</label><input id="bn-picAlt" type="text" name="picAlt" placeholder="Alternative text" value="'+ alt +'" style="border:1px solid #ccc;width:290px;padding-left:5px;box-sizing:border-box;border-radius:3px;height:100%;float:left;margin-left:2px;" /></div><button id="bn-valid" style="border:0;background:#38b396;margin-top:10px;width:90%;text-align:center;font-weight:bold;color:#fff;text-transform:capitalize;border-radius:3px;line-height:35px;">Save</button></div>';
       iframe.find("body").append(popinpicture);
       iframe.find('#bn-popinPicture').append(contentPopinpicture);
       iframe.find('#bn-popinPicture').slideDown(400, function() {
-        iframe.find('#bn-popinPicture form #bn-valid').click(function(e) {
+        iframe.find('#bn-popinPicture div #bn-valid').click(function(e) {
           e.preventDefault();
           picture.attr('src', iframe.find('#bn-picSrc').val());
           picture.attr('alt', iframe.find('#bn-picAlt').val());
@@ -85,7 +88,7 @@ BackNode.prototype.editor = {
             iframe.find('#bn-popinPicture').remove();
           });
         });
-        iframe.find('#bn-popinPicture form div span').click(function(){
+        iframe.find('#bn-popinPicture div div span').click(function(){
           iframe.find('#bn-popinPicture').slideUp(400,function(){
             iframe.find('#bn-popinPicture').remove();
           });
@@ -167,7 +170,6 @@ BackNode.prototype.editor = {
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
           waitForFinalEvent(function(){
-            alert('Resize...');
             parent.editor.resizeEditableElements(listEditableContent);
           }, 500, "some unique string");
             
