@@ -167,9 +167,9 @@ BackNode.prototype.editor = {
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
           waitForFinalEvent(function(){
-            alert('Resize...');
+            
             parent.editor.resizeEditableElements(listEditableContent);
-          }, 500, "some unique string");
+          }, 500, "");
             
         });
       }
