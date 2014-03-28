@@ -13,6 +13,13 @@ var allImages = [
 	'switch.png'
 ];
 
+var imgAllowed = [
+	'image/png',
+	'image/jpeg',
+	'image/jpg',
+	'image/gif'
+];
+
 var NbObjToLoad = 2 + allImages.length;
 var NbObjLoaded = 0;
 
@@ -35,6 +42,28 @@ function loadProgress(){
 			}
 		}
 	});	
+}
+
+// Transform an absolute URL into a relative URL based on a baseURL
+function absToRel(baseUrl, urlImg){
+	var nbBack = -1;
+	while(1) {
+		if(~urlImg.indexOf(baseUrl)) {
+			var frontDir = '';
+			if(nbBack) {
+				for(var i = 0; i < nbBack; i++)
+					frontDir += '../';
+			} else {
+				frontDir = './';
+			}
+			return urlImg.replace(baseUrl, frontDir);
+		} else {
+			baseUrl = baseUrl.split('/');
+			baseUrl.pop();
+			baseUrl = baseUrl.join('/');
+			nbBack++;
+		}
+	}
 }
 
 $(document).ready(function() {
@@ -92,13 +121,40 @@ $(document).ready(function() {
 		backNode.explorer.pick(function(file) {
 			if(file.mimetype == 'text/html') {
 				backNode.file = file;
+				$('#resize-iframe').css('background-image', 'none');
 				$(backNode.iframe).attr('src', file.url).load(function(){
+					// iFrame loaded
 					backNode.document = this.contentDocument;
+					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
+						backNode.explorer.pick(function(file) {
+							$img = backNode.editingPicture;
+							if(~imgAllowed.indexOf(file.mimetype)) {
+								var baseUrl = backNode.file.url.split('/');
+								baseUrl.pop();
+								baseUrl = baseUrl.join('/') + '/';
+								var imgUrl = absToRel(baseUrl, file.url);
+								$img.attr('src', imgUrl);
+								$('#bn-popinPicture div div span', $('#iframe').contents()).click();
+							} else {
+								alert('Invalid extension !');
+							}
+						});
+					});
+					
+					$('#dark-bgr').stop().fadeOut(150);
+					$('#tools ul li:not(#open)').show();
+					$('#edit-mode').slideDown();
 				});
 			} else {
 				alert('Invalid extension !');
 			}
-		});
+		}, true);
+	});
+
+	var iframeDoc = $('#iframe').contents().get(0);
+	$(iframeDoc).bind('click', function( event ) {
+		if(!backNode.file)
+			$('#open').click();
 	});
 
 	// Click on cancel
@@ -113,9 +169,11 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
+		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.explorer.save(function(){
 			alert('File saved !');
+			$('#dark-bgr').stop().fadeOut(150);
 			backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),true);
 		});
 	});

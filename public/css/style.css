@@ -23,6 +23,10 @@ body {
 	min-height: 250px;
 }
 
+#edit-mode {
+	display: none;
+}
+
 #tutorial {
 	position: absolute;
 	left: 0;
@@ -91,6 +95,14 @@ body {
 	background: rgba(0,0,0,0.5);
 	z-index: 10;
 	display: none;
+}
+
+#loading {
+	width: 100%;
+	height: 100%;
+	background-image: url('../img/loading.png');
+	background-position: center center;
+	background-repeat: no-repeat;
 }
 
 #logo-responsize {
@@ -266,6 +278,7 @@ body {
 	background-size: contain;
 	background-repeat: no-repeat;
 	background-position: center bottom;
+	max-height: 600px;
 }
 
 #iframe-container {
@@ -278,7 +291,10 @@ body {
 
 #resize-iframe {
 	position: absolute;
-	background: #323b46;
+	background-image: url('../img/import-file.png');
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-color: #323b46;
 	left: 20px;	
 	top: 20px;
 	bottom: 20px;
