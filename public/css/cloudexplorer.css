@@ -1,0 +1,446 @@
+div#CE
+{
+	color: #282828;
+	font-style: normal;
+	font-size: 13px;
+	font-family:'Lato', arial, sans-serif;
+	font-weight: 300;
+	line-height: normal;
+
+	max-width:929px;
+	width: 100%;
+	height: 542px;
+
+	position: static;
+	margin: auto;
+
+	background-color: white;
+	border-radius:10px;
+
+	box-shadow: rgba(0, 0, 0, 0.75) 0 1px 10px 0;
+	-moz-box-shadow: rgba(0, 0, 0, 0.75) 0 1px 10px 0;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.75) 0 1px 10px 0;
+}
+div#CE .homeMsg
+{
+	width:55%;margin-left:22%;margin-top:30%;
+	text-align:center;
+	font-size:23px;
+}
+div#CE .ceTitle{
+
+	height: 33px;
+
+	padding-bottom: 17px;
+	padding-left: 20px;
+	padding-right: 20px;
+	padding-top: 17px;
+	font-size: 28px;
+}
+div#CE .ceTitle button {
+	display:inline-block;
+	border:0;
+	padding:0;
+	float:right;
+	height:42px;
+	cursor:pointer;
+}
+div#CE .close-btn
+{
+	background:url("../assets/close.png") no-repeat center center;
+	background-size: 42px;
+	width: 42px;
+	margin-right:-40px;
+	margin-top: -35px;
+}
+
+.fa-power-off {
+	color: #d64338;
+}
+
+div#CE .ceTitle .color-btn
+{
+	background: none;
+	font-size: 18px;
+	font-weight: 300;
+}
+
+div#CE .ceTitle .color-btn:hover, 
+div#CE .ceTitle .color-btn:hover .fa-power-off{
+	color:#cccccc;
+}
+
+div#CE .ce-browser{
+	height: 100%;position:relative;
+}
+div#CE .ce-browser .span5,
+div#CE .ce-browser .span7{
+	border-top: 1px solid #cccccc;
+	float: left;
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 474px;
+}
+div#CE .ce-browser .span5{
+	width: 25%;
+	border-right: 1px solid #cccccc;
+}
+div#CE .ce-browser .span7{
+	width: 74%;
+	overflow: hidden;
+}
+div#CE ul
+{
+	margin:0;
+	padding:0;
+}
+div#CE a
+{
+	z-index: 10;text-decoration:none;
+	cursor:pointer;
+}
+/* hide input file */
+div#CE input[type=file]
+{
+	width:0;height:0;overflow:hidden;
+}
+/* FILES TREE */
+
+div#CE .ce-left-pane li {
+	margin-bottom:10px;
+}
+div#CE ul.tree, div#CE .ce-right-pane ul {
+	list-style:none;
+	margin: 15px;
+}
+
+div#CE .ce-right-pane{
+	width:100%;
+}
+
+div#CE .ce-right-pane ul{
+	height:244px;overflow-y:scroll;
+}
+div#CE .ce-right-pane li{
+	border-bottom: 1px solid #cccccc;
+}
+
+div#CE .ce-right-pane .is-dir-false,
+div#CE .ce-right-pane .is-dir-true{
+	list-style:none;
+	margin: 10px;
+}
+div#CE .ce-right-pane div
+{
+	display:inline-block;
+}
+
+/* SERVICES */
+div#CE span.srvIt
+{
+	cursor:pointer;
+}
+/* FILES AND FOLDERS */
+/* Prevent the text contents of draggable elements from being selectable. */
+[draggable=true]
+{
+  -moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none;user-select:none;
+  /* Required to make elements draggable in old WebKit */
+  -khtml-user-drag:element; -webkit-user-drag:element;
+  cursor:move;
+}
+div#CE .dropzone
+{
+	border:2px dashed #cccccc ;background-color:white;border-radius:10px;
+	width:95%;margin:16px;padding-bottom:10px;
+	text-align:center;
+}
+div#CE .dropzone div /* TODO clean */
+{
+	display:block;margin-bottom:5px;
+}
+div#CE .file-uploader button /* TODO clean */
+{
+	margin: 0 auto;
+	display: block;
+	width:85px;
+	height:63px;
+	background: url('../assets/file-upload.png');
+	background-size:100%;
+	border: none;
+	text-indent: -99999px;
+	/*
+	-webkit-box-shadow: none;
+	-webkit-transition-delay: 0s;
+	-webkit-transition-duration: 0.218s;
+	-webkit-transition-property: all;
+	-webkit-transition-timing-function: ease;
+	-webkit-user-select: none;
+	border-image-outset: 0;
+	border-image-repeat: stretch;
+	border-image-slice: 100%;
+	border-image-source: none;
+	border-image-width: 1;
+	background-color: rgb(77, 144, 254);
+	background-image: -webkit-linear-gradient(top, rgb(77, 144, 254), rgb(71, 135, 237));
+	border:1px solid rgb(48, 121, 237);
+	border-radius: 2px;
+	border-collapse: separate;
+	box-shadow: none;
+	color: rgb(255, 255, 255);
+	cursor: default;
+	font-family: arial, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	height: 27px;
+	line-height: 27px;
+	margin: 0;
+	min-width: 54px;
+	outline-color: rgb(255, 255, 255);
+	outline-style: none;
+	outline-width: 0;
+	padding: 0 8px 8px 0;
+	position: relative;
+	text-align: center;
+	transition-delay: 0s;
+	transition-duration: 0.218s;
+	transition-property: all;
+	transition-timing-function: ease;
+	*/
+}
+
+div#CE .file-uploader button:hover{
+	opacity:0.7;
+}
+
+
+div#CE .ce-folder-over /* TODO */
+{
+	/*border:1px solid red;*/
+}
+
+
+div#CE span.is-dir-true, div.is-dir-true
+{
+	background:url('../assets/folder.png') no-repeat;
+	padding-left:20px;
+	cursor:pointer;
+	background-size:16px;
+}
+
+div#CE span.is-dir-true, div.is-dir-true:active,
+div#CE span.is-dir-false, div.is-dir-false:active
+{
+	opacity:0.7;
+}
+
+div#CE span.is-dir-false, div.is-dir-false
+{
+	background:url('../assets/file.png') no-repeat;
+	padding-left:20px;
+	cursor:pointer;
+	background-size:16px;
+}
+div#CE div.ce-file-selected
+{
+	background-color:blue;
+}
+
+div#CE .ce-item
+{
+	font-weight: 400;
+	font-size: 16px;
+}
+
+div#CE .ce-item img
+{
+	width:30px;
+	height:30px;
+	float: left;
+}
+
+div#CE .ce-item, div#CE .ce-new-item
+{
+	-moz-user-select:none;-khtml-user-select:none;-webkit-user-select:none;user-select:none;
+}
+div#CE .ce-item form, div#CE .ce-new-item form
+{
+	padding:0;margin:0;
+}
+div#CE .ce-item input[type="text"], div#CE .ce-new-item input[type="text"]
+{
+	padding:0;margin:0;
+	height:20px;line-height:18px;
+}
+div#CE .ce-item .ctrls
+{
+	display:none;
+}
+div#CE .ce-item:hover .ctrls
+{
+	display:inline-block;
+}
+div#CE .ce-item .ctrls button
+{
+	background:url("../assets/editortoolbar@2x.png") no-repeat;
+	width:16px;height:16px;
+	background-size:624px;
+	border:0;padding:2px;margin-right:10px;
+}
+
+div#CE .ce-item .ctrls button:hover
+{
+	opacity:0.7;
+}
+
+div#CE .ce-item button.rename
+{
+	background-position: -336px 0;
+}
+div#CE .ce-item button.remove
+{
+	background-position: -528px 0;
+}
+div#CE .ce-item .ctrls button.select
+{
+	background:url("../assets/select.png") no-repeat;
+	background-size: auto 16px;
+}
+div#CE .ce-mkdir-btn
+{
+	display:inline-block;border:0;padding:0;margin-right:15px;margin-bottom:11px;
+	background:none;
+}
+div#CE .loggedin-hide-true /* FIXME useful ? */
+{
+	display: none;
+}
+div#CE .loggedin-show-false /* FIXME useful ? */
+{
+	display: none;
+}
+/* save as btn */
+div#CE div.ce-saveas-btn
+{
+	float:right;
+	border:1px solid rgb(229, 229, 229);
+	padding:2px;
+}
+div#CE div.ce-saveas-btn button {
+	border:0;padding:0;background:none;
+}
+div#CE div.ce-saveas-btn input
+{
+	width:80px;
+}
+div#CE .error-popup {
+	background-color:red;width:100%;
+	font-size:16px;text-align:center;
+	color:black;font-weight:bold;
+}
+div#CE .authPopup {
+	position:absolute;z-index:10;top:0;left:0;
+	width:100%;height:100%;background-color:rgba(0,0,0,.7);
+	border-radius:10px;
+	font-size:28px;text-align:center;
+	color:#282828;
+	font-family: 'Lato', arial, sans-serif;
+	font-weight: 300;
+}
+div#CE .authPopup div {
+	display:inline-block;background-color:#FFFFFF;
+	margin-top:20%;max-width:59%;
+	padding:20px;
+	border-radius:10px;box-shadow: rgba(0, 0, 0, 0.75) 0 1px 10px 0;
+}
+/* LOGS CONSOLE */
+div#CE .ce-log-console
+{
+	font-size:small;
+	height:50px; overflow-y:scroll;
+	list-style-type:none;
+}
+
+
+
+
+
+
+
+.bold_text{
+	font-weight: 900;
+}
+
+.tool_name{
+	float: left;
+	display: block;
+	margin-top:5px;
+	margin-left:5px;
+}
+
+.tool_name:hover{
+	color:#cccccc;
+}
+
+/*-----Boutons pop dropbox-----*/
+
+.style_btn{
+	display: inline-block;
+	margin:0 10px;
+	border-radius:5px;
+	font-size: 14px;
+	width:220px;
+	padding:15px 0;
+	color:#fff;
+	font-weight: bold;
+}
+
+.green_btn{
+	background: #39b396;
+}
+
+.green_btn:hover{
+	background: #74cab5;
+}
+
+.red_btn{
+	background: #d64338;
+}
+
+.red_btn:hover{
+	background: #e27b73;
+}
+
+/*-----Listing-----*/
+
+.new_folder{
+	font-size:16px;
+	font-weight:normal;
+	color:#282828;
+}
+
+.new_folder:hover{
+	font-weight: bold;
+}
+
+li.ce-item:hover{
+	background:#f8f8f8;
+}
+
+div#CE .ce-file:hover
+{
+	font-weight:bold;
+}
+
+div#CE .ce-file:active{
+	font-weight: bold;
+	color:#9c9c9c;
+}
+
+h2.drop_text{
+	font-size: 28px;
+	color:#e0e0e0;
+	font-weight: 400;
+	margin-top: 15px;
+	cursor: default;
+}
