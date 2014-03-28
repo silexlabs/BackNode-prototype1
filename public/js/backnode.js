@@ -8,10 +8,12 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
 	pick: function(callback){
-		cloudExplorer.pick({}, function(data){
-			callback(data);
-			$('#tools ul li:not(#open)').show();
-	    $(window).resize();
+    $('#dark-bgr').show();
+    cloudExplorer.pick({}, function(data){
+      callback(data);
+      $('#tools ul li:not(#open)').show();
+      $(window).resize();
+      $('#dark-bgr').hide();
 		});
 	},
 
@@ -150,13 +152,10 @@ BackNode.prototype.editor = {
         element.focusout(function(){
             $(this).children('.backnode-editzone').show();
         });
-        $(parent.document).resize(function(){
-          alert('toto')
-        })
         var iframe = $(this.parent.iframe.contentWindow);
-        iframe.bind('resize.backNodeEditor', function(){
-            parent.editor.resizeEditableElements(listEditableContent);
-        });
+        // iframe.bind('resize.backNodeEditor', function(){
+        //     parent.editor.resizeEditableElements(listEditableContent);
+        // });
       }
     }
 

@@ -1,15 +1,51 @@
+var activeTuto = false;
+var stepTuto = 1;
 var activeResize = false;
 var oldIframeWidth = 1920;
 var oldIframeHeight = 1080;
+var dragoutTimeout = null;
+
+var allImages = [
+	'background.png',
+	'backnode.png',
+	'logo.png',
+	'resize.png',
+	'switch.png'
+];
+
+var NbObjToLoad = 2 + allImages.length;
+var NbObjLoaded = 0;  
+
+function loadProgress(){
+	NbObjLoaded++;
+	$('#loader-fill').stop().animate({
+		width: (NbObjLoaded/NbObjToLoad)*100 + '%'
+	}, 500, function(){
+		if(NbObjLoaded/NbObjToLoad == 1) {
+			$('#loader').fadeOut(600);
+			setTimeout(function(){
+				$('#tuto-step1').fadeIn(function(){
+					activeTuto = true;
+				});
+			}, 500);
+		}
+	});	
+}
 
 $(document).ready(function() {
+	for(var i = 0; i < allImages.length; ++i){
+		img = new Image();
+		img.onload = loadProgress;
+		img.src = '../img/' + allImages[i];
+	}
+
 	var $iframe = $('#iframe');
 	var $resizeIframe = $('#resize-iframe');
 	var $iframeContainer = $('#iframe-container');
 	var iframeWidthGap = ($('#resize-iframe').outerWidth() - $('#resize-iframe').width()) / 2;
 	var iframeHeightGap = ($('#resize-iframe').outerHeight() - $('#resize-iframe').height() + $('#resize-bar').height()) / 2;
 
-	window.backNode = new BackNode($iframe.get(0));
+	window.backNode = new BackNode($iframe[0]);
 
 	/* ------------------------------------------- */
 
@@ -76,7 +112,16 @@ $(document).ready(function() {
 	// Enable resize window
 	$('body').mousedown(function(evt){
 		activeResize = $(evt.target).is($('#resize-icon'));
-	}).mouseup(function(){
+	}).mouseup(function(evt){
+		if(activeTuto) {
+			stepTuto++;
+			$('#tuto-step' + stepTuto).fadeIn();
+			if(stepTuto >= 4)
+				$('#tutorial').fadeOut();
+		}
+		// console.log($(evt.target));
+		if($(evt.target).is($('#CE .close-btn')))
+			$('#dark-bgr').hide();
 		activeResize = false;
 	});
 
@@ -118,6 +163,22 @@ $(document).ready(function() {
 	$('body').click(function(evt){
 		if(!$(evt.target).is($('#resolution, #resolution span, #resolution i')))
 			$('#resolution-presets').slideUp(200);
+	});
+
+	$('#CE .close-btn').click(function(){
+		$('#dark-bgr').hide();
+	});
+
+	// Dragging file over the dropzone -> Add Class OR Remove class
+	$('#CE').on('dragover', '.dropzone, .ce-item', function(){
+		var $self = $(this);
+		$self.addClass('dragover');
+		clearTimeout(this.dragTimeout);
+		this.dragTimeout = setTimeout(function(){
+			$self.removeClass('dragover');
+		}, 100);
+	}).on('dragleave', '.dropzone, .ce-item', function(){
+		$(this).removeClass('dragover');
 	});
 
 	// When window is resized
