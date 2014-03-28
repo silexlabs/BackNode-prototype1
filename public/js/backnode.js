@@ -123,7 +123,16 @@ BackNode.prototype.editor = {
 				$block.show();
 			});
 		});
-		$(window).bind('resize.backNodeEditor keyup.backNodeEditor', function() {
+		var backupWindowSize = $(window.document).width()+'-'+$(window.document).height();
+		$(window).bind('resize.backNodeEditor', function() {
+			backupWindowSize = $(window.document).width()+'-'+$(window.document).height();
+			setTimeout(function() {
+				if(backupWindowSize == $(window.document).width()+'-'+$(window.document).height()) {
+					self.updateBlock(self.parent.baliseSearch.getList(window.document));
+				}
+			}, 200);
+		});
+		$(window).bind('keyup.backNodeEditor', function() {
 			self.updateBlock(self.parent.baliseSearch.getList(window.document));
 		});
 		this.updateBlock(this.parent.baliseSearch.getList(window.document));
