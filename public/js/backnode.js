@@ -2,8 +2,9 @@ var BackNode = function(iframe) {
 	this.file = null;
 	this.iframe = iframe;
 	this.document = iframe.contentDocument;
-  this.editor.parent = this;
-  this.baliseSearch.parent = this;
+	// Allows sharing parent global instance (the current this)
+	this.editor.parent = this;
+	this.baliseSearch.parent = this;
 };
 
 BackNode.prototype.explorer = {
@@ -96,22 +97,29 @@ BackNode.prototype.editor = {
         });
       });
 	},
+	// Allows to insert the "editor-block" and events
 	insertBlock: function(window, list) {
 		var self = this;
 		var block = '<div class="backnode-editor-block" style="position:absolute;z-index:10100;background-color:red;opacity:0.3;"></div>';
 		var $body = $(window.document).find('body');
+		// Loop on all elements
 		$.each(list, function(key, element) {
+			// Checking if a DOM element (ie editable)
 			if(typeof element.tagName == 'undefined') { return; }
 			var $element = $(element);
 			var $block = $(block);
+			// Create an instance of the block that appears in the editable element hovers
 			element.backNodeEditorParent = $block[0];
+			// Insertion of "editor-block" at the end of body
 			$body.append($block);
+			// Creating Event hovers in the "editor-block"
 			$block.bind('mouseover.backNodeEditor', function() {
 				$.each(list, function(key, element) {
 					$(element).trigger('mouseout.backNodeEditor');
 				});
 				$(this).hide();
 			});
+			// Creating the event when mouseout, and click the focusout element
 			$element.bind('mouseout.backNodeEditor', function() {
 				if($(this).data('bn-editing') === true) { return; }
 				$block.show();
@@ -123,6 +131,8 @@ BackNode.prototype.editor = {
 				$block.show();
 			});
 		});
+		// Create an event that updates the "editor-block" during a resize
+		// To maximize expected that the resize does not move for 200ms before starting the function
 		var backupWindowSize = $(window.document).width()+'-'+$(window.document).height();
 		$(window).bind('resize.backNodeEditor', function() {
 			backupWindowSize = $(window.document).width()+'-'+$(window.document).height();
@@ -132,25 +142,34 @@ BackNode.prototype.editor = {
 				}
 			}, 200);
 		});
+		// Upgrade to the "editor-block" if a block is modified (if newline, ...)
 		$(window).bind('keyup.backNodeEditor', function() {
 			self.updateBlock(self.parent.baliseSearch.getList(window.document));
 		});
 		this.updateBlock(this.parent.baliseSearch.getList(window.document));
 	},
+	// Allows you to remove the "editor-block" and events
 	removeBlock: function(window, list) {
+		// It destroys all global events
 		$(window).unbind('resize.backNodeEditor keyup.backNodeEditor');
+		// Destroys all "editor-block"
 		$(window.document).find('.backnode-editor-block').remove();
+		// Destroys all elements and events "editor-block"
 		$.each(list, function(key, element) {
 			$(element).unbind('mouseout.backNodeEditor click.backNodeEditor focusout.backNodeEditor');
 			$(element.backNodeEditorParent).unbind('mouseover.backNodeEditor');
 			delete element.backNodeEditorParent;
 		});
 	},
+	// Allows to update all "editor-block"
 	updateBlock: function(list) {
+		// Loop over the list of items
 		$.each(list, function(key, element) {
+			// Checking if a DOM element (ie editable)
 			if(typeof element.tagName == 'undefined') { return; }
 			var $element = $(element);
 			var $block = $(element.backNodeEditorParent);
+			// Upgrade to the editor-block "with the size of the parent element
 			$block.css({
 				left:	$element.offset().left,
 				top:	$element.offset().top,
@@ -162,23 +181,30 @@ BackNode.prototype.editor = {
 }
 
 BackNode.prototype.baliseSearch = {
+	// Function to return the editable elements (+ templates in objects)
 	getList: function(document) {
 		var list = [];
+		// Loop on all elements "data-bn"
 		$(document).find('[data-bn]').each(function() {
+			// Check if the element is a child template or repeat, then cancels and treated later
 			if($(this).parents('[data-bn="template"], [data-bn="repeat"]').size() > 0) {
 				return;
-			} else if($(this).data('bn') == 'template') {
+			}
+			//Checks if a template
+			else if($(this).data('bn') == 'template') {
 				var subTemplate = {
 					type: 'template',
 					DOM: this,
 					repeats: []
 				};
+				// We search all the repeats of the template
 				$(this).find('[data-bn="repeat"]').each(function() {
 					var subRepeat = {
 						type: 'repeat',
 						DOM: this,
 						edit: []
 					};
+					// We search all editable elements repeat
 					$(this).find('[data-bn="edit"]').each(function() {
 						subRepeat.edit.push(this);
 					});
@@ -189,6 +215,7 @@ BackNode.prototype.baliseSearch = {
 				list.push(this);
 			}
 		});
+		// Returns the total list
 		return list;
 	}
 };
