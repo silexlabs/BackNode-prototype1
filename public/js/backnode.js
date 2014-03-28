@@ -150,9 +150,27 @@ BackNode.prototype.editor = {
         element.focusout(function(){
             $(this).children('.backnode-editzone').show();
         });
+
+        var waitForFinalEvent = (function () {
+        var timers = {};
+        return function (callback, ms, uniqueId) {
+          if (!uniqueId) {
+            uniqueId = "Don't call this twice without a uniqueId";
+          }
+          if (timers[uniqueId]) {
+            clearTimeout (timers[uniqueId]);
+          }
+          timers[uniqueId] = setTimeout(callback, ms);
+        };
+        })();
+
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
+          waitForFinalEvent(function(){
+            alert('Resize...');
             parent.editor.resizeEditableElements(listEditableContent);
+          }, 500, "some unique string");
+            
         });
       }
     }
