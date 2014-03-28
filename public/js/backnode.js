@@ -74,7 +74,7 @@ BackNode.prototype.editor = {
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
       var iframe = $(this.parent.document);
-      var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10000;width:100%;height:100%;top:-15px;left:-15px;background:#000;background:rgba(0,0,0,0.8)"></div>';
+      var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10000;width:100%;height:100%;top:0;left:0;background:#000;background:rgba(0,0,0,0.8)"></div>';
       var alt = picture.attr('alt');
       if(alt === undefined)
         alt ="";
@@ -118,7 +118,8 @@ BackNode.prototype.editor = {
           var top = element.offset().top;
           var left = element.offset().left;
 
-          element.children('.backnode-editzone').offset({top: top, left: left});
+          //element.children('.backnode-editzone').offset({top: top, left: left});
+          element.children('.backnode-editzone').css({top: top, left: left});
           element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
         }
       }
@@ -172,10 +173,6 @@ BackNode.prototype.editor = {
         var iframe = $(this.parent.iframe.contentWindow);
         iframe.bind('resize.backNodeEditor', function(){
           waitForFinalEvent(function(){
-<<<<<<< HEAD
-=======
-            
->>>>>>> 8b32176a73b28eb35911af3ae6a520191225e083
             parent.editor.resizeEditableElements(listEditableContent);
           }, 500, "");
             
