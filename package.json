@@ -1,8 +1,12 @@
 {
 	"name": "BackNode",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"devDependencies": {
 		"express": "*",
-		"unifile": "*"
+		"unifile": "*",
+		"grunt": "*",
+		"grunt-cli": "*",
+		"grunt-contrib-jshint": "*",
+		"grunt-contrib-uglify": "*"
 	}
 }
