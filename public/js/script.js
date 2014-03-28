@@ -14,7 +14,7 @@ var allImages = [
 ];
 
 var NbObjToLoad = 2 + allImages.length;
-var NbObjLoaded = 0;  
+var NbObjLoaded = 0;
 
 function loadProgress(){
 	NbObjLoaded++;
@@ -23,11 +23,16 @@ function loadProgress(){
 	}, 500, function(){
 		if(NbObjLoaded/NbObjToLoad == 1) {
 			$('#loader').fadeOut(600);
-			setTimeout(function(){
-				$('#tuto-step1').fadeIn(function(){
-					activeTuto = true;
-				});
-			}, 500);
+			// Check if user has already seen the tutorial
+			if(!~document.cookie.indexOf('backnodetuto')) {
+				$('#tutorial').show();
+				setTimeout(function(){
+						// Add a cookie to prevent showing the tutorial again
+						$('#tuto-step1').fadeIn(function(){
+							activeTuto = true;
+						});
+				}, 500);
+			}
 		}
 	});	
 }
@@ -54,7 +59,7 @@ $(document).ready(function() {
 		var y = ($iframeContainer.height() - height) / 2 - iframeHeightGap;
 		x = x >= 10 ? x : 10;
 		y = y >= 10 ? y : 10;
-		$resizeIframe.animate({
+		$resizeIframe.stop().animate({
 				left: x,
 				right: x,
 				top: y,
@@ -67,8 +72,8 @@ $(document).ready(function() {
 					$iframe.height($resizeIframe.height() - 45);
 				},
 				complete: function(){
-					$('#iframe-width').text($iframe.width());
-					$('#iframe-height').text($iframe.height());
+					$('#iframe-width').text(width);
+					$('#iframe-height').text(height);
 					$iframe.height($resizeIframe.height() - 45);
 				}
 			});
@@ -96,6 +101,12 @@ $(document).ready(function() {
 		});
 	});
 
+	// Click on cancel
+	$('#tools #cancel').click(function() {
+		var iframe = $('#iframe')[0];
+		iframe.src = iframe.src;
+	});
+
 	// Click on save
 	$('#tools #save').click(function() {
 		if(backNode.file === null) {
@@ -116,8 +127,10 @@ $(document).ready(function() {
 		if(activeTuto) {
 			stepTuto++;
 			$('#tuto-step' + stepTuto).fadeIn();
-			if(stepTuto >= 4)
+			if(stepTuto >= 4) {
 				$('#tutorial').fadeOut();
+				document.cookie = "backnodetuto=1; expires="+ (new Date()).getTime()+(30*24*60*60*1000) +"; path=/";
+			}
 		}
 		// console.log($(evt.target));
 		if($(evt.target).is($('#CE .close-btn')))
