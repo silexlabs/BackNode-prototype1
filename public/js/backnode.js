@@ -67,10 +67,10 @@ BackNode.prototype.editor = {
         }
       }
     }
-    
+
     //Call the function which colorize the editable zones
     parent.editor.showEditableElements(listEditableContent,flagEditable);
-    
+
   },/* This method allow the user to modify a picture ( alt and src attribute ) */
   editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
       var iframe = $(this.parent.document);
@@ -103,17 +103,16 @@ BackNode.prototype.editor = {
 
           element.children('.backnode-editzone').offset({top: top, left: left});
           element.children('.backnode-editzone').css({width: element.width(), height: element.height()});
-        
+
   },
   resizeEditableElements: function(listEditableContent) {
-    //console.log(listEditableContent)
     for (key in listEditableContent)
       {
 
         var element = $(listEditableContent[key]);
-        
+
         if (typeof listEditableContent[key].tagName !== 'undefined'){
-          
+
 
           var top = element.offset().top;
           var left = element.offset().left;
@@ -139,7 +138,7 @@ BackNode.prototype.editor = {
         if (typeof listEditableContent[key].tagName !== 'undefined'){
 
         element.append(edit_zone);
-      
+
         element.mouseenter(function() {
             $(this).children('.backnode-editzone').hide();
         });
@@ -175,7 +174,7 @@ BackNode.prototype.editor = {
           waitForFinalEvent(function(){
             parent.editor.resizeEditableElements(listEditableContent);
           }, 500, "");
-            
+
         });
       }
     }
@@ -195,33 +194,43 @@ BackNode.prototype.editor = {
 }
 
 BackNode.prototype.baliseSearch = {
-	getList: function(document) {
+  getList: function(document) {
 		var list = [];
-		$(document).find('[data-bn]').each(function() {
-			if($(this).parents('[data-bn="template"], [data-bn="repeat"]').size() > 0) {
-				return;
-			} else if($(this).data('bn') == 'template') {
-				var subTemplate = {
-					type: 'template',
-					DOM: this,
-					repeats: []
-				};
-				$(this).find('[data-bn="repeat"]').each(function() {
-					var subRepeat = {
-						type: 'repeat',
-						DOM: this,
-						edit: []
-					};
-					$(this).find('[data-bn="edit"]').each(function() {
-						subRepeat.edit.push(this);
-					});
-					subTemplate.repeats.push(subRepeat);
-				});
-				list.push(subTemplate);
-			} else {
-				list.push(this);
-			}
-		});
+    list = list
+    .concat(this.getListForSelector(document, '[data-bn="text"]', '[data-bn="image"]', '[data-bn="template"]', '[data-bn="repeat"]'))
+    .concat(this.getListForSelector(document, '.backnode-text', '.backnode-image', '.backnode-template', '.backnode-repeat'));
 		return list;
-	}
+  },
+  getListForSelector: function(document, bnTexts, bnImages, bnTemplates, bnRepeats) {
+    var list = [];
+    $(document).find(bnImages + ', ' + bnTexts + ', ' + bnTemplates + ', ' + bnRepeats).each(function() {
+      if($(this).parents(bnTemplates + ', ' + bnRepeats).size() > 0) {
+        console.warn('getListForSelector this has a parent which is a template', this);
+        return;
+      } else if($(this).is(bnTemplates)) {
+        var subTemplate = {
+          type: 'template',
+          DOM: this,
+          repeats: []
+        };
+        $(this).find(bnRepeats).each(function() {
+          var subRepeat = {
+            type: 'repeat',
+            DOM: this,
+            edit: []
+          };
+          $(this).find(bnTexts).each(function() {
+            subRepeat.edit.push(this);
+          });
+          subTemplate.repeats.push(subRepeat);
+        });
+        list.push(subTemplate);
+      } else if($(this).is(bnImages)) {
+        list.push($(this).find('img').get(0));
+      } else {
+        list.push(this);
+      }
+    });
+    return list;
+  }
 };
