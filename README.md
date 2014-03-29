@@ -1,9 +1,36 @@
+[![Build Status](https://travis-ci.org/silexlabs/BackNode.png?branch=master)](https://travis-ci.org/silexlabs/BackNode)
+[![Dependency Status](https://gemnasium.com/silexlabs/BackNode.png)](https://gemnasium.com/silexlabs/BackNode)
+[![Stories in Ready](https://badge.waffle.io/silexlabs/backnode.png?label=ready)](http://waffle.io/silexlabs/backnode)
+[![Code Climate](https://codeclimate.com/github/silexlabs/BackNode.png)](https://codeclimate.com/github/silexlabs/BackNode)
+
 BackNode
 ========
 
 POC for [CIFACOM](http://www.cifacom.com/) Week project
 
-## First step
+[BackNode is GPL](http://www.gnu.org/copyleft/gpl.html)
+
+## Webdesigner guide
+
+This is how to make an HTML page editable by content writers and clients in [BackNode](http://www.backnode.io/).
+
+First open the HTML file in a text editor.
+
+### Make text fields editable
+
+For all the nodes which are texts and which you want to be editable in BackNode, add the css class ```backnode-text``` or the HTML attribute ```data-bn="text"```.
+
+### Make images editable
+
+For all the nodes which are images and which you want to be editable in BackNode, add the css class ```backnode-image``` or the HTML attribute ```data-bn="image"```.
+
+### Make HTML pages with Silex
+
+The HTML pages created with [Silex website builder](http://www.silex.me) can also be edited in BackNode. The designer has to enter the advanced mode of Silex - tools > Apollo mode, and add the css classes provided above to the desired elements.
+
+## Developer guide
+
+### First step
 
 With this project, you can work directly online with some **cloud service**, or on **localhost**, as you wish.
 
@@ -28,7 +55,7 @@ or
 
 When you have created your account, if you want try Cloud9, please go to your Cloud9 dashboard, and create a new workspace, then start editing it.
 
-# Clone and build the project
+### Clone and build the project
 
 First, you need to fork the project from the original repository. Click on the *Fork* button on the top right corner of main project page.
 
@@ -42,7 +69,7 @@ clone the project:
 
 Ok it's done, you can now build the project and start to work !
 
-## Deploy / Git / Pull request
+### Deploy / Git / Pull request
 
 when your feature it's done and you wants to merge it into the main repo, commit your modification in your forked repo, then create a **pull request to silexlabs/BackNode**. I will try to check soon as possible your pull request, do some comment's or not and merge it. Then, i deploy your modification on heroku server :
 
@@ -50,7 +77,7 @@ when your feature it's done and you wants to merge it into the main repo, commit
 
 the project must be **stable** when you create your pull request
 
-## Contact
+### Contact
 
 If you have any questions / git issue / anything else,
 you can contact me on skype all the day at *ronan.drouglazet*, I cannot promise to you to answer all the time quickly, but i will try !
