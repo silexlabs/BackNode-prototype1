@@ -69,16 +69,75 @@ clone the project:
 
 Ok it's done, you can now build the project and start to work !
 
-### Deploy / Git / Pull request
+## Build the project
 
-when your feature it's done and you wants to merge it into the main repo, commit your modification in your forked repo, then create a **pull request to silexlabs/BackNode**. I will try to check soon as possible your pull request, do some comment's or not and merge it. Then, i deploy your modification on heroku server :
+just enter make in your terminal :)
 
-    http://nodejs-cms.herokuapp.com
+    > make
 
-the project must be **stable** when you create your pull request
+this make command will install npm dependencies (express / unifile / grunt / etc..), but other if you want -> package.json
+launch grunt compilation
+and run the project (server.js)
 
-### Contact
+## User Interface
+![BlackNote user interface](http://img15.hostingpics.net/pics/282120Tutorielstep1.jpg)
+![BlackNote user interface](http://img15.hostingpics.net/pics/709320Tutorielstep2.jpg)
+![BlackNote user interface](http://img15.hostingpics.net/pics/288913TutorielStep3.jpg)
+![BlackNote user interface](http://img15.hostingpics.net/pics/314086Tutorielstep4.jpg)
 
-If you have any questions / git issue / anything else,
-you can contact me on skype all the day at *ronan.drouglazet*, I cannot promise to you to answer all the time quickly, but i will try !
-If you really don't have success to contact me, try with *lexa.yo*(Alexandre Hoyau)
+
+## Keyword referencing
+cms,
+content management system,
+free,
+easy,
+online,
+webapp,
+opensource,
+community,
+template,
+editable,
+duplicate,
+html content,
+edit,
+backnode,
+dynamic,
+tool,
+web tool,
+silexlabs,
+cifacom,
+cloud explorer
+
+
+## Technical attributes
+* data-bn="edit" :  Edit your element
+* data-bn="template" : To repeat the sub items of the type repeate
+* data-bn="repeat" : Repeat element in a template.
+
+
+```html
+<h2>Example of code</h2>
+
+<!doctype html>
+<html>
+<head>
+		<title>BackNode</title>
+</head>
+<body>
+	 <h2 data-bn="edit">BackNode</h2>
+
+     <div data-bn="edit" >
+         Aliquam placerat vel rhoncus placerat turpis! Cum vel ut? Porttitor parturient phasellus.
+     </div>
+
+     <img src="https://www.google.com/images/srpr/logo11w.png" data-bn="edit"/>
+
+</body>
+</html>
+```
+
+
+## Contact
+
+* You can follow us on facebook and twitter, can see the demonstration : http://loicvieira.fr/backnodeV2
+

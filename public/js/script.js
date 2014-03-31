@@ -13,8 +13,15 @@ var allImages = [
 	'switch.png'
 ];
 
+var imgAllowed = [
+	'image/png',
+	'image/jpeg',
+	'image/jpg',
+	'image/gif'
+];
+
 var NbObjToLoad = 2 + allImages.length;
-var NbObjLoaded = 0;  
+var NbObjLoaded = 0;
 
 function loadProgress(){
 	NbObjLoaded++;
@@ -23,13 +30,40 @@ function loadProgress(){
 	}, 500, function(){
 		if(NbObjLoaded/NbObjToLoad == 1) {
 			$('#loader').fadeOut(600);
-			setTimeout(function(){
-				$('#tuto-step1').fadeIn(function(){
-					activeTuto = true;
-				});
-			}, 500);
+			// Check if user has already seen the tutorial
+			if(!~document.cookie.indexOf('backnodetuto')) {
+				$('#tutorial').show();
+				setTimeout(function(){
+						// Add a cookie to prevent showing the tutorial again
+						$('#tuto-step1').fadeIn(function(){
+							activeTuto = true;
+						});
+				}, 500);
+			}
 		}
 	});	
+}
+
+// Transform an absolute URL into a relative URL based on a baseURL
+function absToRel(baseUrl, urlImg){
+	var nbBack = -1;
+	while(1) {
+		if(~urlImg.indexOf(baseUrl)) {
+			var frontDir = '';
+			if(nbBack) {
+				for(var i = 0; i < nbBack; i++)
+					frontDir += '../';
+			} else {
+				frontDir = './';
+			}
+			return urlImg.replace(baseUrl, frontDir);
+		} else {
+			baseUrl = baseUrl.split('/');
+			baseUrl.pop();
+			baseUrl = baseUrl.join('/');
+			nbBack++;
+		}
+	}
 }
 
 $(document).ready(function() {
@@ -54,7 +88,7 @@ $(document).ready(function() {
 		var y = ($iframeContainer.height() - height) / 2 - iframeHeightGap;
 		x = x >= 10 ? x : 10;
 		y = y >= 10 ? y : 10;
-		$resizeIframe.animate({
+		$resizeIframe.stop().animate({
 				left: x,
 				right: x,
 				top: y,
@@ -67,8 +101,8 @@ $(document).ready(function() {
 					$iframe.height($resizeIframe.height() - 45);
 				},
 				complete: function(){
-					$('#iframe-width').text($iframe.width());
-					$('#iframe-height').text($iframe.height());
+					$('#iframe-width').text(width);
+					$('#iframe-height').text(height);
 					$iframe.height($resizeIframe.height() - 45);
 				}
 			});
@@ -87,13 +121,46 @@ $(document).ready(function() {
 		backNode.explorer.pick(function(file) {
 			if(file.mimetype == 'text/html') {
 				backNode.file = file;
+				$('#resize-iframe').css('background-image', 'none');
 				$(backNode.iframe).attr('src', file.url).load(function(){
+					// iFrame loaded
 					backNode.document = this.contentDocument;
+					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
+						backNode.explorer.pick(function(file) {
+							$img = backNode.editingPicture;
+							if(~imgAllowed.indexOf(file.mimetype)) {
+								var baseUrl = backNode.file.url.split('/');
+								baseUrl.pop();
+								baseUrl = baseUrl.join('/') + '/';
+								var imgUrl = absToRel(baseUrl, file.url);
+								$img.attr('src', imgUrl);
+								$('#bn-popinPicture div div span', $('#iframe').contents()).click();
+							} else {
+								alert('Invalid extension !');
+							}
+						});
+					});
+					
+					$('#dark-bgr').stop().fadeOut(150);
+					$('#tools ul li:not(#open)').show();
+					$('#edit-mode').slideDown();
 				});
 			} else {
 				alert('Invalid extension !');
 			}
-		});
+		}, true);
+	});
+
+	var iframeDoc = $('#iframe').contents().get(0);
+	$(iframeDoc).bind('click', function( event ) {
+		if(!backNode.file)
+			$('#open').click();
+	});
+
+	// Click on cancel
+	$('#tools #cancel').click(function() {
+		var iframe = $('#iframe')[0];
+		iframe.src = iframe.src;
 	});
 
 	// Click on save
@@ -102,9 +169,11 @@ $(document).ready(function() {
 			alert('No file chosen !');
 			return;
 		}
+		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.explorer.save(function(){
 			alert('File saved !');
+			$('#dark-bgr').stop().fadeOut(150);
 			backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),true);
 		});
 	});
@@ -116,8 +185,10 @@ $(document).ready(function() {
 		if(activeTuto) {
 			stepTuto++;
 			$('#tuto-step' + stepTuto).fadeIn();
-			if(stepTuto >= 4)
+			if(stepTuto >= 4) {
 				$('#tutorial').fadeOut();
+				document.cookie = "backnodetuto=1; expires="+ (new Date()).getTime()+(30*24*60*60*1000) +"; path=/";
+			}
 		}
 		// console.log($(evt.target));
 		if($(evt.target).is($('#CE .close-btn')))
