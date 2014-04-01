@@ -28,16 +28,16 @@ BackNode.prototype.explorer = {
 };
 
 BackNode.prototype.editor = {
-  /*This method allow the user to modify the "data-bn" elements if flagEditable is true. It do the contrary if flagEditable is false */
+    /*This method allow the user to modify the "data-bn" elements if flagEditable is true. It do the contrary if flagEditable is false */
     editable: function(listEditableContent, flagEditable) {
         var parent = this.parent;
+
         if (flagEditable === true) {
             for(key in listEditableContent) {
 
                 switch(listEditableContent[key].tagName) {
-
+                    /*listener on picture click*/
                     case "IMG":
-                        /*listener on picture click*/
                         $(listEditableContent[key]).click(function(){
                             parent.editor.editPicture($(this));
                         });
@@ -54,25 +54,21 @@ BackNode.prototype.editor = {
             this.insertBlock(this.parent.iframe.contentWindow, listEditableContent);
         } else {
         /*This function disallow the edition of elements*/
-
             /*remove the picture popin if needed*/
             $(parent.document).find('#bn-popinPicture').remove();
-
             for (key in listEditableContent) {
                 if(listEditableContent[key].tagName == "IMG") {
                     $(listEditableContent[key]).unbind("click");
-                } else {
+                }  else {
                     $(listEditableContent[key]).removeAttr('contenteditable');
                 }
             }
-
             this.removeBlock(this.parent.iframe.contentWindow, listEditableContent);
         }
 
-        //Call the function which colorize the editable zones
-        parent.editor.showEditableElements(listEditableContent,flagEditable);
+    },
 
-    },/* This method allow the user to modify a picture ( alt and src attribute ) */
+    /* This method allow the user to modify a picture ( alt and src attribute ) */
     editPicture: function(picture) {/*need to be modified, doesn't active now, that's so dirty */
         var iframe = $(this.parent.document);
         var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10200;width:100%;height:100%;top:0;left:0;background:#000;background:rgba(0,0,0,0.8)"></div>';
@@ -183,15 +179,18 @@ BackNode.prototype.editor = {
 };
 
 BackNode.prototype.baliseSearch = {
-    getList: function(document) {
+    getList: function(iframeDocument) {
         var list = [];
         list = list
-        .concat(this.getListForSelector(document, '[data-bn="text"]', '[data-bn="image"]', '[data-bn="template"]', '[data-bn="repeat"]'))
-        .concat(this.getListForSelector(document, '.backnode-text', '.backnode-image', '.backnode-template', '.backnode-repeat'));
+        .concat(this.getListForSelector(iframeDocument, '[data-bn="text"]', '[data-bn="image"]', '[data-bn="template"]', '[data-bn="repeat"]'))
+        .concat(this.getListForSelector(iframeDocument, '.backnode-text', '.backnode-image', '.backnode-template', '.backnode-repeat'));
+
+        return list;
     },
-    getListForSelector: function(document, bnTexts, bnImages, bnTemplates, bnRepeats) {
+    getListForSelector: function(iframeDocument, bnTexts, bnImages, bnTemplates, bnRepeats) {
         var list = [];
-        $(document).find(bnImages + ', ' + bnTexts + ', ' + bnTemplates + ', ' + bnRepeats).each(function() {
+        $(iframeDocument).find(bnImages + ', ' + bnTexts + ', ' + bnTemplates + ', ' + bnRepeats).each(function() {
+
             if($(this).parents(bnTemplates + ', ' + bnRepeats).size() > 0) {
                 console.warn('getListForSelector this has a parent which is a template', this);
                 return;
@@ -214,7 +213,7 @@ BackNode.prototype.baliseSearch = {
                 });
                 list.push(subTemplate);
             } else if($(this).is(bnImages)) {
-                list.push($(this).find('img').get(0));
+                list.push($(this).get(0));
             } else {
                 list.push(this);
             }
