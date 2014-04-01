@@ -16,4 +16,4 @@ build:
 	grunt
 
 run:
-	node dist/app.min.js
+	node app/server.js

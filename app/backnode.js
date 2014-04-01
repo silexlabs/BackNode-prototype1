@@ -9,21 +9,22 @@ var BackNode = function(iframe) {
 
 BackNode.prototype.explorer = {
     pick: function(callback, notHide){
-    $('#dark-bgr').show();
-    cloudExplorer.pick({}, function(data){
-      $(window).resize();
-      if(!notHide)
-        $('#dark-bgr').hide();
-      callback(data);
+        $('#dark-bgr').show();
+        cloudExplorer.pick({}, function(data){
+            $(window).resize();
+            if(!notHide) {
+                $('#dark-bgr').hide();
+            }
+            callback(data);
         });
     },
 
     save: function(callback){
-    callback = callback || function(){};
-    var iframe = $('iframe')[0].contentDocument;
-    var serializer = new XMLSerializer();
-    var content = serializer.serializeToString(iframe);
-    cloudExplorer.write(backNode.file, content, callback);
+        callback = callback || function(){};
+        var iframe = $('iframe')[0].contentDocument;
+        var serializer = new XMLSerializer();
+        var content = serializer.serializeToString(iframe);
+        cloudExplorer.write(backNode.file, content, callback);
     }
 };
 
@@ -33,14 +34,12 @@ BackNode.prototype.editor = {
         var parent = this.parent;
 
         if (flagEditable === true) {
-            for(key in listEditableContent) {
+            for (var key in listEditableContent) {
 
                 switch(listEditableContent[key].tagName) {
                     /*listener on picture click*/
                     case "IMG":
-                        $(listEditableContent[key]).click(function(){
-                            parent.editor.editPicture($(this));
-                        });
+                        $(listEditableContent[key]).click(parent.editor.editPicture); //BUG not working anymore, must see that
                     break;
 
                     default:
@@ -56,11 +55,11 @@ BackNode.prototype.editor = {
         /*This function disallow the edition of elements*/
             /*remove the picture popin if needed*/
             $(parent.document).find('#bn-popinPicture').remove();
-            for (key in listEditableContent) {
-                if(listEditableContent[key].tagName == "IMG") {
-                    $(listEditableContent[key]).unbind("click");
+            for (var keyb in listEditableContent) {
+                if(listEditableContent[keyb].tagName === "IMG") {
+                    $(listEditableContent[keyb]).unbind("click");
                 }  else {
-                    $(listEditableContent[key]).removeAttr('contenteditable');
+                    $(listEditableContent[keyb]).removeAttr('contenteditable');
                 }
             }
             this.removeBlock(this.parent.iframe.contentWindow, listEditableContent);
@@ -73,9 +72,14 @@ BackNode.prototype.editor = {
         var iframe = $(this.parent.document);
         var popinpicture = '<div id="bn-popinPicture" style="display:none;position:fixed;z-index:10200;width:100%;height:100%;top:0;left:0;background:#000;background:rgba(0,0,0,0.8)"></div>';
         var alt = picture.attr('alt');
+
         backNode.editingPicture = picture;
-        if(alt === undefined) alt = "";
-        var contentPopinpicture = '<div name="bn-picForm" style="border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;box-shadow:2px 2px 1px #000;width:410px;height:200px;text-align:center;background:#eee;position:absolute;left:50%;top:50%;margin:-100px 0 0 -205px;color:#000000;"><div style="padding:5px;margin-top:10px;margin-bottom:10px;color:#000;display:block;text-align:center"><img src="'+ document.URL +'img/import-title.png" alt="Import your file" style="width:50%;" /><span style="cursor:pointer;position:absolute;top:-15px;right:-15px;"><img src="'+ document.URL +'img/close-pic.png" alt="X" /></span></div><div style="height:35px;overflow:hidden;line-height:35px;margin-left:10px;"><label for="bn-picSrc" style="height:100%;float:left;margin-right:10px;">Src attribute</label><input id="bn-picSrc" type="text" name="picSrc" placeholder="Url" value="'+ picture.attr('src') +'" style="border:1px solid #ccc;padding-left:5px;box-sizing:border-box;height:100%;float:left;margin-right:0;border-radius:3px 0 0 3px;" /><img id="bn-picUpload" src="'+ document.URL +'img/import-btn.png" alt="Import a file" style="height:100%;float:left;" /></div><div style="height:35px;overflow:hidden;line-height:35px;margin:10px 0 0 10px;"><label for="bn-picAlt" style="height:100%;float:left;margin-right:10px;">Alt attribute</label><input id="bn-picAlt" type="text" name="picAlt" placeholder="Alternative text" value="'+ alt +'" style="border:1px solid #ccc;width:290px;padding-left:5px;box-sizing:border-box;border-radius:3px;height:100%;float:left;margin-left:2px;" /></div><button id="bn-valid" style="border:0;background:#38b396;margin-top:10px;width:90%;text-align:center;font-weight:bold;color:#fff;text-transform:capitalize;border-radius:3px;line-height:35px;">Save</button></div>';
+
+        if(alt === undefined) {
+            alt = "";
+        }
+
+        var contentPopinpicture = '<div name="bn-picForm" style="border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;box-shadow:2px 2px 1px #000;width:410px;height:200px;text-align:center;background:#eee;position:absolute;left:50%;top:50%;margin:-100px 0 0 -205px;color:#000000;"><div style="padding:5px;margin-top:10px;margin-bottom:10px;color:#000;display:block;text-align:center"><img src="'+ window.document.URL +'img/import-title.png" alt="Import your file" style="width:50%;" /><span style="cursor:pointer;position:absolute;top:-15px;right:-15px;"><img src="'+ window.document.URL +'img/close-pic.png" alt="X" /></span></div><div style="height:35px;overflow:hidden;line-height:35px;margin-left:10px;"><label for="bn-picSrc" style="height:100%;float:left;margin-right:10px;">Src attribute</label><input id="bn-picSrc" type="text" name="picSrc" placeholder="Url" value="'+ picture.attr('src') +'" style="border:1px solid #ccc;padding-left:5px;box-sizing:border-box;height:100%;float:left;margin-right:0;border-radius:3px 0 0 3px;" /><img id="bn-picUpload" src="'+ window.document.URL +'img/import-btn.png" alt="Import a file" style="height:100%;float:left;" /></div><div style="height:35px;overflow:hidden;line-height:35px;margin:10px 0 0 10px;"><label for="bn-picAlt" style="height:100%;float:left;margin-right:10px;">Alt attribute</label><input id="bn-picAlt" type="text" name="picAlt" placeholder="Alternative text" value="'+ alt +'" style="border:1px solid #ccc;width:290px;padding-left:5px;box-sizing:border-box;border-radius:3px;height:100%;float:left;margin-left:2px;" /></div><button id="bn-valid" style="border:0;background:#38b396;margin-top:10px;width:90%;text-align:center;font-weight:bold;color:#fff;text-transform:capitalize;border-radius:3px;line-height:35px;">Save</button></div>';
         iframe.find("body").append(popinpicture);
         iframe.find('#bn-popinPicture').append(contentPopinpicture);
         iframe.find('#bn-popinPicture').slideDown(400, function() {
@@ -103,7 +107,7 @@ BackNode.prototype.editor = {
         // Loop on all elements
         $.each(list, function(key, element) {
             // Checking if a DOM element (ie editable)
-            if(typeof element.tagName == 'undefined') { return; }
+            if(typeof element.tagName === 'undefined') { return; }
             var $element = $(element);
             var $block = $(block);
             // Create an instance of the block that appears in the editable element hovers
@@ -135,7 +139,7 @@ BackNode.prototype.editor = {
         $(window).bind('resize.backNodeEditor', function() {
             backupWindowSize = $(window.document).width() + '-' + $(window.document).height();
             setTimeout(function() {
-                if(backupWindowSize == $(window.document).width() + '-' + $(window.document).height()) {
+                if(backupWindowSize === $(window.document).width() + '-' + $(window.document).height()) {
                     self.updateBlock(self.parent.baliseSearch.getList(window.document));
                 }
             }, 200);
@@ -164,7 +168,7 @@ BackNode.prototype.editor = {
         // Loop over the list of items
         $.each(list, function(key, element) {
             // Checking if a DOM element (ie editable)
-            if(typeof element.tagName == 'undefined') { return; }
+            if(typeof element.tagName === 'undefined') { return; }
             var $element = $(element);
             var $block = $(element.backNodeEditorParent);
             // Upgrade to the editor-block "with the size of the parent element

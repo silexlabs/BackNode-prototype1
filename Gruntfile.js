@@ -7,7 +7,7 @@ module.exports = function(grunt) {
                     report: "gzip"
                 },
                 files: {
-                    "dist/app.min.js": ["server.js"]
+                    "app/backnode.min.js": ["app/backnode.js"]
                 }
             }
         },
@@ -20,10 +20,14 @@ module.exports = function(grunt) {
                   "undef": true,
                   "node": true,
                   "globals": {
-                    "backnode": true
+                    "backNode": true,
+                    "$": true,
+                    "window": true,
+                    "cloudExplorer": true,
+                    "XMLSerializer": true
                   }
                 },
-                src: ["Gruntfile.js", "app/**/*.js"]
+                src: ["Gruntfile.js", "app/server.js", "app/backnode.js"]
             },
             test: {
                 options: {
@@ -35,7 +39,7 @@ module.exports = function(grunt) {
                     "backnode": true
                   }
                 },
-                src: ["test/**/*.js"]
+                src: ["test/*.js"]
             }
         }
     });
@@ -43,5 +47,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-contrib-uglify");
 
-    grunt.registerTask("default", ["uglify:app", "jshint"]);
+    grunt.registerTask("default", ["jshint", "uglify:app"]);
 };

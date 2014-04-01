@@ -3,14 +3,12 @@
 <head>
 	<meta charset="utf-8">
 	<title>BackNode</title>
-	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>	
+	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="./css/normalize.css">
 	<link rel="stylesheet" href="./css/font-awesome.min.css">
 	<link rel="stylesheet" href="./css/style.css">
-	<link rel="stylesheet" href="./css/cloudexplorer.css">
-	<link rel="icon" type="image/ico" href="./img/favicon.ico">	
-	<script src="./js/jquery.min.js"></script>
-	<script src="./js/script.js"></script>
+	<link rel="stylesheet" href="../submodules/cloud-explorer/lib/app/css/style.css">
+	<link rel="icon" type="image/ico" href="./img/favicon.ico">
 </head>
 <body>
 	<div id="tutorial">
@@ -74,11 +72,13 @@
 		<div class="ce-browser"></div>
 	</div>
 
-	<!-- <script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()"></script> -->
-	<!-- <script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()"></script> -->
-	<script src="./js/angular.min.js" onload="loadProgress()"></script>
-	<script src="./js/angular-resource.min.js" onload="loadProgress()"></script>
-	<script src="./js/backnode.js"></script>
-	<script src="./js/cloud-explorer.js"></script>
+
+	<!-- be careful about script order :) -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="./js/script.js"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()"></script>
+	<script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js"></script>
+	<script src="../app/backnode.js"></script>
 </body>
 </html>
