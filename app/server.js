@@ -16,6 +16,7 @@ var options = Unifile.defaultConfig;
 var backnode = Express();
 	backnode.use(Unifile.middleware(Express, backnode, options));
 	backnode.use('/submodules', Express.static(__dirname + '/../submodules'));
+	backnode.use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib'));
 	backnode.use('/app', Express.static(__dirname + '/../app'));
 	backnode.use('/', Express.static(__dirname + '/../public'));
 	backnode.use(function(req, res, next) {
