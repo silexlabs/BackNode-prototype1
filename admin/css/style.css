@@ -70,20 +70,20 @@ body {
 }
 
 #tuto-step0 {
-	background-image: url('../img/tuto/step0.png');
+	background-image: url('../img/tuto/step0.jpg');
 	display: block;
 }
 
 #tuto-step1 {
-	background-image: url('../img/tuto/step1.png');
+	background-image: url('../img/tuto/step1.jpg');
 }
 
 #tuto-step2 {
-	background-image: url('../img/tuto/step2.png');
+	background-image: url('../img/tuto/step2.jpg');
 }
 
 #tuto-step3 {
-	background-image: url('../img/tuto/step3.png');
+	background-image: url('../img/tuto/step3.jpg');
 }
 
 #dark-bgr {
