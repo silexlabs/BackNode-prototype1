@@ -1,0 +1,693 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+
+@font-face {
+    font-family: 'robotothin';
+    src: url('../fonts/roboto-thin-webfont.eot');
+    src: url('../fonts/roboto-thin-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto-thin-webfont.woff') format('woff'),
+         url('../fonts/roboto-thin-webfont.ttf') format('truetype'),
+         url('../fonts/roboto-thin-webfont.svg#robotothin') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'robotoregular';
+    src: url('../fonts/roboto-regular-webfont.eot');
+    src: url('../fonts/roboto-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto-regular-webfont.woff') format('woff'),
+         url('../fonts/roboto-regular-webfont.ttf') format('truetype'),
+         url('../fonts/roboto-regular-webfont.svg#robotoregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'robotomedium';
+    src: url('../fonts/roboto-medium-webfont.eot');
+    src: url('../fonts/roboto-medium-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto-medium-webfont.woff') format('woff'),
+         url('../fonts/roboto-medium-webfont.ttf') format('truetype'),
+         url('../fonts/roboto-medium-webfont.svg#robotomedium') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'robotobold';
+    src: url('../fonts/roboto-bold-webfont.eot');
+    src: url('../fonts/roboto-bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/roboto-bold-webfont.woff') format('woff'),
+         url('../fonts/roboto-bold-webfont.ttf') format('truetype'),
+         url('../fonts/roboto-bold-webfont.svg#robotobold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'latobold';
+    src: url('../fonts/lato-bol-webfont.eot');
+    src: url('../fonts/lato-bol-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/lato-bol-webfont.woff') format('woff'),
+         url('../fonts/lato-bol-webfont.ttf') format('truetype'),
+         url('../fonts/lato-bol-webfont.svg#latobold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'latoregular';
+    src: url('../fonts/lato-reg-webfont.eot');
+    src: url('../fonts/lato-reg-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/lato-reg-webfont.woff') format('woff'),
+         url('../fonts/lato-reg-webfont.ttf') format('truetype'),
+         url('../fonts/lato-reg-webfont.svg#latoregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'latolight';
+    src: url('../fonts/lato-lig-webfont.eot');
+    src: url('../fonts/lato-lig-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/lato-lig-webfont.woff') format('woff'),
+         url('../fonts/lato-lig-webfont.ttf') format('truetype'),
+         url('../fonts/lato-lig-webfont.svg#latolight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'latohairline';
+    src: url('../fonts/lato-hai-webfont.eot');
+    src: url('../fonts/lato-hai-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/lato-hai-webfont.woff') format('woff'),
+         url('../fonts/lato-hai-webfont.ttf') format('truetype'),
+         url('../fonts/lato-hai-webfont.svg#latohairline') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'latoitalic';
+    src: url('../fonts/lato-regita-webfont.eot');
+    src: url('../fonts/lato-regita-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/lato-regita-webfont.woff') format('woff'),
+         url('../fonts/lato-regita-webfont.ttf') format('truetype'),
+         url('../fonts/lato-regita-webfont.svg#latoitalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+/*
+Styles Perso
+*/
+
+body{
+	font-family: 'latolight', sans-serif;
+	font-weight: 400;
+	background:#29313c;
+}
+header{
+	background-image: url(../img/background_header.jpg);
+	width: 100%;
+	padding-bottom: 77px;
+}
+#wrap{
+	overflow: hidden;
+}
+.social{
+	background: url(../img/background_pixel.png) repeat;
+	height: 40px;
+	width: 100%;
+	line-height: 38px;
+}
+.social ul{
+	text-align: right;
+	width: 980px;
+	margin: 0 auto;
+}
+.social ul li{
+	display: inline-block;
+	vertical-align: middle;
+}
+.social .facebook{
+	background: url(../img/facebook.png) no-repeat;
+	width: 9px;
+	height: 19px;
+	background-size: 9px 19px;
+	display: block;
+	text-indent: -8000px;
+}
+.social .github{
+	background: url(../img/github@2x.png) no-repeat;
+	width: 20px;
+	height: 20px;
+	background-size: 20px 20px;
+	display: block;
+	text-indent: -8000px;
+}
+.social .twitter{
+	background: url(../img/twitter.png) no-repeat;
+	width: 21px;
+	height: 19px;
+	background-size: 21px 19px;
+	display: block;
+	text-indent: -8000px;
+}
+.social li + li{
+	margin-left: 30px;
+}
+.navigation h1{
+	background: url(../img/logo.png);
+	width: 261px;
+	height: 35px;
+	background-size: 261px 35px;
+	font: 0/0 a;
+    text-shadow: none;
+    color: transparent;
+    float: left;
+}
+h1 a{
+	display: block;
+	height: 100%;
+	width: 100%;
+	text-decoration: none; 
+}
+.navigation{
+	width: 980px;
+	margin: 42px auto 0 auto;
+}
+.navigation ul{
+	float: right;
+	margin-top: 10px;
+}
+.navigation ul li{
+	display: inline-block;
+}
+.navigation ul li a{
+	color: #fff;
+	text-decoration: none;
+	font-family: 'latohairline', sans-serif;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.navigation li + li{
+	margin-left: 30px;
+}
+.intro{
+	text-align: center;
+	margin-top: 80px;
+}
+.active a{
+	border-bottom: 4px solid #34b399;
+	font-family: 'latoregular' !important;
+	padding-bottom: 2px;
+}
+.navigation ul li a:hover{
+	border-bottom: 4px solid #34b399;
+	padding-bottom: 2px;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.responsize{
+	background-color: #f4f4f4;
+}
+.responsize .col-1{
+	width: 980px;
+margin: 0 auto;
+padding-top: 40px;
+padding-bottom: 50px;
+text-align: center;
+}
+.intro h2{
+	font-size: 36px;
+	font-family: 'latohairline', sans-serif;
+	color: #fff;
+}
+.intro h2 strong{
+	font-family: 'latobold';
+}
+.intro p{
+	margin: 15px 0px 35px 0px;
+	color: #fff;
+	font-size: 17px;
+}
+a.active{
+	border-bottom: 3px;
+}
+a.cta,button.cta{
+	font-family: 'robotoregular', sans-serif;
+  font-size: 13px;
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
+  background-color: #34b399;
+  width: 195px;
+  height: 45px;
+  line-height: 45px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  text-align: center;
+  border: none; 
+  -webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+a.cta:hover,button.cta:hover{
+	background-color: #2b947e;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.cta.rs{
+	background-color: #f99649;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.cta.rs:hover{
+	background-color: #f78149;
+	-webkit-transition: all 0.3s ease-in-out;
+	-moz-transition: all 0.3s ease-in-out;
+	-o-transition: all 0.3s ease-in-out;
+	-ms-transition: all 0.3s ease-in-out;
+	transition: all 0.3s ease-in-out;
+}
+.presentation,.documentation,.learning{
+	background-color: #fff;
+}
+.wrap_presentation,.wrap_documentation,.wrap_learning{
+	width: 980px;
+	margin: 0 auto;
+	padding-top:60px;
+}
+span.legend{
+	display: block;
+	color: #5d5d5d;
+	font-family: 'latoitalic';
+	margin: 10px 0;
+	display: inline-block;
+	width: 710px;
+	text-align: center;
+}
+.documentation p img{
+	margin-top: 30px;
+}
+.wrap_documentation div div{
+	text-align: left;
+}
+.wrap_documentation div + div{
+	margin-top: 60px;
+}
+.presentation h2,.documentation h2,.learning h2,.responsize h2{
+	font-size: 36px;
+	font-family: 'latohairline', sans-serif;
+	color: #3d3d3d;
+}
+.responsize h2{
+	display: table;
+	vertical-align: middle;
+	text-align: center;
+	margin: 0 auto;
+}
+.responsize h2 *{
+	display: table-cell;
+	vertical-align: middle;
+	margin: 0 2px;
+}
+.presentation h2 strong,.documentation h2 strong,.learning h2 strong,.responsize h2 strong{
+	font-family: 'latobold';
+	color: #003962;
+}
+.presentation p,.documentation p,.responsize p{
+	color: #818181;
+	margin-top:15px;
+	margin-bottom: 35px;
+	line-height: 22px;
+}
+.documentation p{
+	text-align: left;
+}
+.documentation p strong{
+	color: #e7493c;
+	font-family: 'latobold';
+}
+.presentation-text{
+	width: 400px;
+}
+.col-2,.col-1{
+	padding-bottom: 70px;
+}
+.col{
+	float: left;
+}
+.col-2 .col + .col{
+	margin-left:40px;
+}
+.col-1{
+	text-align: center;
+}
+.presentation-video h2{
+	margin-bottom: 50px;
+}
+.documentation h2,.learning h2{
+	margin-bottom: 60px;
+}
+.documentation h3{
+	display: block;
+	text-align: left;
+	color: #3d3d3d;
+	border-bottom: 1px solid #3d3d3d;
+	padding-bottom: 5px;
+	font-size: 24px;
+	font-family: 'latobold';
+}
+.community,.question div{
+	width: 980px;
+	margin: 0 auto;
+	padding-top:40px;
+	padding-bottom: 50px;
+	text-align: center;
+}
+.question{
+	background: url('../img/q_bg.jpg') #1d212a repeat-y center;
+	background-size: 1280px 27px;
+}
+.community h2,.contact_container .main_title {
+	color: #fff;
+	font-family: 'latohairline', sans-serif;
+	font-size: 36px;
+	text-align: center;
+	margin-bottom:70px;
+}
+.question h2{
+	color: #fff;
+	font-family: 'latohairline', sans-serif;
+	font-size: 36px;
+	text-align: center;
+}
+.community h2 strong,.question h2 strong{
+	font-family: 'latobold';
+}
+.question p{
+	color: #fff;
+	margin: 10px 0 30px 0;
+}
+.community ul,.learning ul{
+	margin-bottom: 55px;
+}
+.community ul li,.learning ul li{
+	display: inline-block;
+	width: 30%;
+	text-align: center;
+	vertical-align: top;
+}
+.community li + li,.learning li + li{
+	margin-left: 40px;
+}
+.community h3{
+	font-size: 24px;
+	color: #fff;
+	background: url(../img/picto1.png) top center no-repeat;
+	background-size: 69px 69px;
+	padding-top: 85px;
+	font-family: 'latohairline';
+}
+.learning h3{
+	font-size: 24px;
+	color: #3d3d3d;
+	padding-top: 85px;
+	font-family: 'latohairline';
+}
+.community h3.discover{
+	background: url(../img/picto2.png) top center no-repeat;
+	background-size: 125px 70px ;
+}
+.community h3.growup{
+	background: url(../img/picto3.png) top center no-repeat;
+	background-size: 80px 70px ;
+}
+.community h3 strong,.learning h3 strong{
+	font-family: 'latobold';
+}
+.community p{
+	color: #ddd;
+	margin-top: 20px;
+	font-size: 15px;
+	line-height: 20px;
+}
+.learning p{
+	color: #5c5c5c;
+	margin-top: 20px;
+	font-size: 15px;
+	line-height: 20px;
+}
+.social-wrap{
+	margin: 0 auto;
+	width: 980px;
+}
+footer p{
+	position: absolute;
+	color: #b5b6b7;
+	font-size: 14px;
+	line-height: 40px;
+}
+h3.import{
+	background: url('../img/import.png') top center no-repeat;
+	background-size: 114px 70px;
+}
+h3.edit{
+	background: url('../img/edit.png') top center no-repeat;
+	background-size: 71px 70px;
+}
+h3.save{
+	background: url('../img/save.png') top center no-repeat;
+	background-size: 71px 70px;
+}
+h3.onoff{
+	background: url('../img/onoff.png') center 20px no-repeat;
+	background-size: 150px 48px;
+}
+h3.cancel{
+	background: url('../img/back.png') top center no-repeat;
+	background-size: 73px 65px;
+}
+h3.preview{
+	background: url('../img/preview.png') center 20px no-repeat;
+	background-size: 72px 48px;
+}
+
+/*
+Hacks
+*/
+
+.clearfix:before, .clearfix:after {
+content: "\0020"; display: block; height: 0; visibility: hidden; 
+}
+.clearfix:after { clear: both; }
+
+.clearfix { zoom: 1; }
+
+.ir {
+    font: 0/0 a;
+    text-shadow: none;
+    color: transparent;
+}
+
+button {
+  cursor: pointer; }
+
+.contact_container {
+  padding: 60px 0;
+  background-color: #fff; }
+  .contact_container .content {
+    width: 980px;
+    margin: 0 auto;
+    overflow: hidden; }
+
+.contact_container .main_title {
+  color: #003962; }
+
+.contact_form {
+  float: left;
+  width: 355px; }
+  .contact_form fieldset {
+    position: relative;
+    margin-bottom: 15px; }
+  .contact_form input, .contact_form textarea {
+    width: 100%;
+    font-size: 18px;
+    font-family: "Lato", sans-serif;
+    background-color: #e9e9e9;
+    border: 0;
+    padding: 15px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box; }
+    .contact_form input:focus, .contact_form textarea:focus {
+      outline: 0; }
+  .contact_form input {
+    height: 45px;
+    z-index: 10;
+    padding-left: 70px; }
+    .contact_form input:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 57px;
+      background-color: #34b399;
+      z-index: 100; }
+  .contact_form textarea {
+    height: 145px;
+    resize: none; }
+  .contact_form ::-webkit-input-placeholder {
+    color: #a1a1a1; }
+  .contact_form ::-moz-placeholder {
+    color: #a1a1a1; }
+  .contact_form :-ms-input-placeholder {
+    color: #a1a1a1; }
+  .contact_form ::placeholder {
+    color: #a1a1a1; }
+  .contact_form .cta {
+    display: block;
+    width: 100%; }
+
+.social_links, .gmaps_container {
+  float: right;
+  width: 563px;
+  text-align: center; }
+
+.social_links__item {
+  display: inline-block;
+  margin-left: 100px;
+  text-align: center;
+  vertical-align: top; }
+  .social_links__item:first-child {
+    margin-left: 0; }
+  .social_links__item .bolder {
+    display: block; }
+
+.social_links__link {
+  font-size: 18px;
+  color: #29313c;
+  text-decoration: none;
+  line-height: normal; }
+
+.social_icon {
+  display: block;
+  height: 35px;
+  margin: 0 auto 12px auto;
+  background: url("../img/sprite_social2.png");
+  -webkit-background-size: 90px 35px;
+  background-size: 90px 35px; }
+  .social_icon.social_icon--github {
+    width: 35px;
+    background-position: 0 0; }
+  .social_icon.social_icon--facebook {
+    width: 16px;
+    background-position: -36px 0; }
+  .social_icon.social_icon--twitter {
+    width: 38px;
+    background-position: -52px 0; }
+
+.intro h2 strong, .bolder {
+  font-family: 'latobold'; }
+
+.form_icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 57px;
+  background-color: #34B399;
+  background-repeat: no-repeat;
+  background-position: center center;
+  -webkit-border-radius: 4px;
+  border-radius: 4px; }
+  .form_icon.form_icon__name {
+    -webkit-background-size: 22px 21px;
+    background-size: 22px 21px;
+    background-image: url("../img/form_icon_name.png"); }
+  .form_icon.form_icon__email {
+    -webkit-background-size: 21px 14px;
+    background-size: 21px 14px;
+    background-image: url("../img/form_icon_email.png"); }
+  .form_icon.form_icon__phone {
+    -webkit-background-size: 18px 26px;
+    background-size: 18px 26px;
+    background-image: url("../img/form_icon_phone.png"); }
+
+.gmaps_container {
+  margin-top: 58px; }
+

@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>BackNode</title>
+	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="./css/normalize.css">
+	<link rel="stylesheet" href="./css/font-awesome.min.css">
+	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="../submodules/cloud-explorer/lib/app/css/style.css">
+	<link rel="icon" type="image/ico" href="./img/favicon.ico">
+</head>
+<body>
+	<div id="tutorial">
+		<div id="click-continue">Click to continue...</div>
+		<div id="tuto-toolbar"></div>
+		<div style="z-index: 20;" id="tuto-step0"></div>
+		<div style="z-index: 30;" id="tuto-step1"></div>
+		<div style="z-index: 40;" id="tuto-step2"></div>
+		<div style="z-index: 50;" id="tuto-step3"></div>
+	</div>
+
+	<div id="loader">
+		<div id="loader-container">
+			<div id="loader-empty"></div>
+			<div id="loader-fill"></div>
+		</div>
+	</div>
+
+	<div id="dark-bgr">
+		<div id="loading"></div>
+	</div>
+
+	<div id="tools">
+		<div id="menu-wrapper">
+			<div id="edit-mode">
+				Mode <span class="bold">édition</span> :
+				<div id="editor"></div>
+			</div>
+			<ul>
+				<li id="open"><i class="fa fa-upload"></i> Import file</li>
+				<li id="cancel"><i class="fa fa-reply"></i> Cancel</li>
+				<li id="save"><i class="fa fa-save"></i> Save</li>
+				<li id="responsize"><a href="#"><div id="logo-responsize"></div> Responsize</a></li>
+			</ul>
+			<div id="background"></div>
+		</div>
+	</div>
+
+	<div id="iframe-container">
+		<div id="resize-iframe">
+			<iframe src="about:blank" id="iframe"></iframe>
+			<div id="resize-bar">
+				<div id="resolution">
+					<ul id="resolution-presets">
+						<li data-width="1920" data-height="1080">Full HD</li>
+						<li data-width="1280" data-height="720">HD Ready</li>
+						<li data-width="320" data-height="480">iPhone 3GS</li>
+						<li data-width="640" data-height="960">iPhone 4</li>
+						<li data-width="640" data-height="1136">iPhone 5</li>
+						<li data-width="768" data-height="1024">iPad</li>
+					</ul>
+					<span id="iframe-width">1024</span>x<span id="iframe-height">768</span>
+					<i class="fa fa-caret-up"></i>
+				</div>
+			</div>
+			<div id="resize-icon"></div>
+		</div>
+	</div>
+
+	<div id="CE" ng-app="ceDirectives">
+		<div class="ce-browser"></div>
+	</div>
+
+
+	<!-- be careful about script order :) -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+	<script src="./js/script.js"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()"></script>
+	<script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js"></script>
+	<script src="../app/backnode.min.js"></script>
+</body>
+</html>

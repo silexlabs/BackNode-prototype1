@@ -41,7 +41,7 @@ function loadProgress(){
 				}, 500);
 			}
 		}
-	});	
+	});
 }
 
 // Transform an absolute URL into a relative URL based on a baseURL
@@ -70,7 +70,7 @@ $(document).ready(function() {
 	for(var i = 0; i < allImages.length; ++i){
 		img = new Image();
 		img.onload = loadProgress;
-		img.src = '../img/' + allImages[i];
+		img.src = 'img/' + allImages[i];
 	}
 
 	var $iframe = $('#iframe');
@@ -140,7 +140,7 @@ $(document).ready(function() {
 							}
 						});
 					});
-					
+
 					$('#dark-bgr').stop().fadeOut(150);
 					$('#tools ul li:not(#open)').show();
 					$('#edit-mode').slideDown();
@@ -281,16 +281,16 @@ $(document).ready(function() {
 		$('#tools').height($(window).height());
 		$('#CE').css({ marginLeft: -($('#CE').width()/2), marginTop: -($('#CE').height()/2) });
 		var bgrHeight = $(window).height() - $('#menu-wrapper').height() - 110;
-		if(bgrHeight > 200) {			
+		if(bgrHeight > 200) {
 			$('#tools #background').stop().fadeIn().css({
-				backgroundImage: "url('../img/backnode.png')",
+				backgroundImage: "url('img/backnode.png')",
 				height: bgrHeight
 			});
 		} else if(bgrHeight < 50) {
 			$('#tools #background').stop().fadeOut(50);
 		} else {
 			$('#tools #background').stop().fadeIn().css({
-				backgroundImage: "url('../img/logo.png')",
+				backgroundImage: "url('img/logo.png')",
 				height: 86
 			});
 		}
