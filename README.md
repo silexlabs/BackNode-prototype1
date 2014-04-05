@@ -106,5 +106,5 @@ cloud explorer
 
 ## Contact
 
-* You can follow us on facebook and twitter, can see the demonstration : http://loicvieira.fr/backnodeV2
+* You can follow us on facebook and twitter, can see the demonstration : http://www.backnode.io
 
