@@ -4,7 +4,8 @@ module.exports = function(grunt) {
         uglify: {
             app: {
                 options: {
-                    report: "gzip"
+                    report: "gzip",
+                    sourceMap: true
                 },
                 files: {
                     "app/backnode.min.js": ["app/backnode.js"]

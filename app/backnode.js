@@ -39,7 +39,7 @@ BackNode.prototype.editor = {
                 switch(listEditableContent[key].tagName) {
                     /*listener on picture click*/
                     case "IMG":
-                        $(listEditableContent[key]).click(parent.editor.editPicture); //BUG not working anymore, must see that
+                        $(listEditableContent[key]).click(parent.editor.editPicture.bind(this, $(listEditableContent[key])));
                     break;
 
                     default:
