@@ -74,11 +74,15 @@
 
 
 	<!-- be careful about script order :) -->
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-	<script src="./js/script.js"></script>
-	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()"></script>
-	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()"></script>
-	<script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js"></script>
-	<script src="../app/backnode.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js" type="text/javascript"></script>
+	<script src="./js/script.min.js" type="text/javascript"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()" type="text/javascript"></script>
+	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()" type="text/javascript"></script>
+	<script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js" type="text/javascript"></script>
+	<script src="../app/backnode.min.js" type="text/javascript"></script>
+	<script src="../app/ckeditor/ckeditor.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		CKEDITOR.disableAutoInline = true;
+	</script>
 </body>
 </html>

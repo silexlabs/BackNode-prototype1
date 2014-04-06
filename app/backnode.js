@@ -5,6 +5,7 @@ var BackNode = function(iframe) {
     // Allows sharing parent global instance (the current this)
     this.editor.parent = this;
     this.baliseSearch.parent = this;
+    this.ckeditor = {};
 };
 
 BackNode.prototype.explorer = {
@@ -44,13 +45,26 @@ BackNode.prototype.editor = {
 
                     default:
                         if($(listEditableContent[key]).length > 0) {
+                            //active editable element
                             $(listEditableContent[key]).attr('contenteditable', 'true');
+
+                            //active ckeditor on editable element
+                            if (!parent.ckeditor[$(listEditableContent[key]).get(0)]) {
+                                parent.ckeditor[$(listEditableContent[key]).get(0)] = window.CKEDITOR.inline( $(listEditableContent[key]).get(0) );
+                            }
                         }
                     break;
                 }
-            }
 
-            this.insertBlock(this.parent.iframe.contentWindow, listEditableContent);
+                //add class hover editable for border color and cursor pointer when mouse over an editable element
+                $(listEditableContent[key]).addClass("hoverEditable");
+
+                //add style node on iframe for css effect hover
+                if (!parent.ckeditor.css) {
+                    parent.ckeditor.css = $('<style>.hoverEditable:hover { outline: 1px dashed #7DBEFF; cursor: pointer}</style>');
+                    $(parent.document.head).append(parent.ckeditor.css);
+                }
+            }
         } else {
         /*This function disallow the edition of elements*/
             /*remove the picture popin if needed*/
@@ -59,12 +73,32 @@ BackNode.prototype.editor = {
                 if(listEditableContent[keyb].tagName === "IMG") {
                     $(listEditableContent[keyb]).unbind("click");
                 }  else {
+                    //remove everythings
                     $(listEditableContent[keyb]).removeAttr('contenteditable');
+                    if (parent.ckeditor[$(listEditableContent[keyb]).get(0)]) {
+                        parent.ckeditor[$(listEditableContent[keyb]).get(0)].destroy();
+                        parent.ckeditor[$(listEditableContent[keyb]).get(0)] = null;
+                    }
+                }
+
+                //remove class hover editable for border color and cursor pointer when mouse over an editable element
+                $(listEditableContent[keyb]).removeClass("hoverEditable");
+
+                //remove style node on iframe for css effect hover
+                if (parent.ckeditor.css) {
+                    parent.ckeditor.css.remove();
+                    parent.ckeditor.css = null;
+                }
+
+                //clean ckeditor empty style node ...
+                var s = parent.document.head.getElementsByTagName("style");
+                for(var i in s) {
+                    if (s.hasOwnProperty(i) && s[i].innerHTML === "") {
+                        parent.document.head.removeChild(s[i]);
+                    }
                 }
             }
-            this.removeBlock(this.parent.iframe.contentWindow, listEditableContent);
         }
-
     },
 
     /* This method allow the user to modify a picture ( alt and src attribute ) */
@@ -96,87 +130,6 @@ BackNode.prototype.editor = {
                 iframe.find('#bn-popinPicture').slideUp(400,function(){
                     iframe.find('#bn-popinPicture').remove();
                 });
-            });
-        });
-    },
-    // Allows to insert the "editor-block" and events
-    insertBlock: function(window, list) {
-        var self = this;
-        var block = '<div class="backnode-editor-block" style="position:absolute;z-index:10100;background-color:red;opacity:0.3;"></div>';
-        var $body = $(window.document).find('body');
-        // Loop on all elements
-        $.each(list, function(key, element) {
-            // Checking if a DOM element (ie editable)
-            if(typeof element.tagName === 'undefined') { return; }
-            var $element = $(element);
-            var $block = $(block);
-            // Create an instance of the block that appears in the editable element hovers
-            element.backNodeEditorParent = $block[0];
-            // Insertion of "editor-block" at the end of body
-            $body.append($block);
-            // Creating Event hovers in the "editor-block"
-            $block.bind('mouseover.backNodeEditor', function() {
-                $.each(list, function(key, element) {
-                    $(element).trigger('mouseout.backNodeEditor');
-                });
-                $(this).hide();
-            });
-            // Creating the event when mouseout, and click the focusout element
-            $element.bind('mouseout.backNodeEditor', function() {
-                if($(this).data('bn-editing') === true) { return; }
-                $block.show();
-            }).bind('click.backNodeEditor', function() {
-                $(this).data('bn-editing', true);
-                $block.hide();
-            }).bind('focusout.backNodeEditor', function() {
-                $(this).data('bn-editing', false);
-                $block.show();
-            });
-        });
-        // Create an event that updates the "editor-block" during a resize
-        // To maximize expected that the resize does not move for 200ms before starting the function
-        var backupWindowSize = $(window.document).width() + '-' + $(window.document).height();
-        $(window).bind('resize.backNodeEditor', function() {
-            backupWindowSize = $(window.document).width() + '-' + $(window.document).height();
-            setTimeout(function() {
-                if(backupWindowSize === $(window.document).width() + '-' + $(window.document).height()) {
-                    self.updateBlock(self.parent.baliseSearch.getList(window.document));
-                }
-            }, 200);
-        });
-        // Upgrade to the "editor-block" if a block is modified (if newline, ...)
-        $(window).bind('keyup.backNodeEditor', function() {
-            self.updateBlock(self.parent.baliseSearch.getList(window.document));
-        });
-        this.updateBlock(this.parent.baliseSearch.getList(window.document));
-    },
-    // Allows you to remove the "editor-block" and events
-    removeBlock: function(window, list) {
-        // It destroys all global events
-        $(window).unbind('resize.backNodeEditor keyup.backNodeEditor');
-        // Destroys all "editor-block"
-        $(window.document).find('.backnode-editor-block').remove();
-        // Destroys all elements and events "editor-block"
-        $.each(list, function(key, element) {
-            $(element).unbind('mouseout.backNodeEditor click.backNodeEditor focusout.backNodeEditor');
-            $(element.backNodeEditorParent).unbind('mouseover.backNodeEditor');
-            delete element.backNodeEditorParent;
-        });
-    },
-    // Allows to update all "editor-block"
-    updateBlock: function(list) {
-        // Loop over the list of items
-        $.each(list, function(key, element) {
-            // Checking if a DOM element (ie editable)
-            if(typeof element.tagName === 'undefined') { return; }
-            var $element = $(element);
-            var $block = $(element.backNodeEditorParent);
-            // Upgrade to the editor-block "with the size of the parent element
-            $block.css({
-                left:   $element.offset().left,
-                top:    $element.offset().top,
-                width:  $element.outerWidth(),
-                height: $element.outerHeight()
             });
         });
     }
