@@ -26,12 +26,12 @@ var NbObjLoaded = 0;
 function loadProgress(){
 	NbObjLoaded++;
 	$('#loader-fill').stop().animate({
-		width: (NbObjLoaded/NbObjToLoad)*100 + '%'
+		width: (NbObjLoaded / NbObjToLoad) * 100 + '%'
 	}, 500, function(){
-		if(NbObjLoaded/NbObjToLoad == 1) {
+		if(NbObjLoaded / NbObjToLoad === 1) {
 			$('#loader').fadeOut(600);
 			// Check if user has already seen the tutorial
-			if(!~document.cookie.indexOf('backnodetuto')) {
+			if(!~window.document.cookie.indexOf('backnodetuto')) {
 				$('#tutorial').show();
 				setTimeout(function(){
 						// Add a cookie to prevent showing the tutorial again
@@ -51,8 +51,9 @@ function absToRel(baseUrl, urlImg){
 		if(~urlImg.indexOf(baseUrl)) {
 			var frontDir = '';
 			if(nbBack) {
-				for(var i = 0; i < nbBack; i++)
+				for(var i = 0; i < nbBack; i++) {
 					frontDir += '../';
+				}
 			} else {
 				frontDir = './';
 			}
@@ -66,9 +67,9 @@ function absToRel(baseUrl, urlImg){
 	}
 }
 
-$(document).ready(function() {
-	for(var i = 0; i < allImages.length; ++i){
-		img = new Image();
+$(window.document).ready(function() {
+	for (var i = 0; i < allImages.length; ++i) {
+		var img = new window.Image();
 		img.onload = loadProgress;
 		img.src = 'img/' + allImages[i];
 	}
@@ -119,7 +120,7 @@ $(document).ready(function() {
 	// Click on open
 	$('#tools #open').click(function() {
 		backNode.explorer.pick(function(file) {
-			if(file.mimetype == 'text/html') {
+			if(file.mimetype === 'text/html') {
 				backNode.file = file;
 				$('#resize-iframe').css('background-image', 'none');
 				$(backNode.iframe).attr('src', file.url).load(function(){
@@ -127,7 +128,7 @@ $(document).ready(function() {
 					backNode.document = this.contentDocument;
 					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
 						backNode.explorer.pick(function(file) {
-							$img = backNode.editingPicture;
+							var $img = backNode.editingPicture;
 							if(~imgAllowed.indexOf(file.mimetype)) {
 								var baseUrl = backNode.file.url.split('/');
 								baseUrl.pop();
@@ -136,7 +137,7 @@ $(document).ready(function() {
 								$img.attr('src', imgUrl);
 								$('#bn-popinPicture div div span', $('#iframe').contents()).click();
 							} else {
-								alert('Invalid extension !');
+								window.alert('Invalid extension !');
 							}
 						});
 					});
@@ -146,15 +147,16 @@ $(document).ready(function() {
 					$('#edit-mode').slideDown();
 				});
 			} else {
-				alert('Invalid extension !');
+				window.alert('Invalid extension !');
 			}
 		}, true);
 	});
 
 	var iframeDoc = $('#iframe').contents().get(0);
 	$(iframeDoc).bind('click', function( event ) {
-		if(!backNode.file)
+		if(!backNode.file) {
 			$('#open').click();
+		}
 	});
 
 	// Click on cancel
@@ -166,15 +168,14 @@ $(document).ready(function() {
 	// Click on save
 	$('#tools #save').click(function() {
 		if(backNode.file === null) {
-			alert('No file chosen !');
+			window.alert('No file chosen !');
 			return;
 		}
 		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.explorer.save(function(){
-			alert('File saved !');
+			window.alert('File saved !');
 			$('#dark-bgr').stop().fadeOut(150);
-			backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),true);
 		});
 	});
 
@@ -187,18 +188,21 @@ $(document).ready(function() {
 			$('#tuto-step' + stepTuto).fadeIn();
 			if(stepTuto >= 4) {
 				$('#tutorial').fadeOut();
-				document.cookie = "backnodetuto=1; expires="+ (new Date()).getTime()+(30*24*60*60*1000) +"; path=/";
+				window.document.cookie = "backnodetuto=1; expires="+ (new Date()).getTime()+(30*24*60*60*1000) +"; path=/";
 			}
 		}
 		// console.log($(evt.target));
-		if($(evt.target).is($('#CE .close-btn')))
+		if($(evt.target).is($('#CE .close-btn'))) {
 			$('#dark-bgr').hide();
+		}
 		activeResize = false;
 	});
 
 	// Resizing window
 	$('body').mousemove(function(evt){
-		if(!activeResize) return;
+		if(!activeResize) {
+			return;
+		}
 		var x = $iframeContainer.width() - evt.pageX + $iframeContainer.offset().left - 5;
 		var y = $iframeContainer.height() - evt.pageY - $iframeContainer.offset().top - 5;
 		var minX = $iframeContainer.width() / 2 - 105;
@@ -232,8 +236,9 @@ $(document).ready(function() {
 
 	// Click on body -> Hide presets menu if opened
 	$('body').click(function(evt){
-		if(!$(evt.target).is($('#resolution, #resolution span, #resolution i')))
+		if(!$(evt.target).is($('#resolution, #resolution span, #resolution i'))) {
 			$('#resolution-presets').slideUp(200);
+		}
 	});
 
 	$('#CE .close-btn').click(function(){

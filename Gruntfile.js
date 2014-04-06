@@ -8,7 +8,8 @@ module.exports = function(grunt) {
                     sourceMap: true
                 },
                 files: {
-                    "app/backnode.min.js": ["app/backnode.js"]
+                    "app/backnode.min.js": ["app/backnode.js"],
+                    "admin/js/script.min.js": ["admin/js/script.js"]
                 }
             }
         },
@@ -22,13 +23,14 @@ module.exports = function(grunt) {
                   "node": true,
                   "globals": {
                     "backNode": true,
+                    "BackNode": true,
                     "$": true,
                     "window": true,
                     "cloudExplorer": true,
                     "XMLSerializer": true
                   }
                 },
-                src: ["Gruntfile.js", "app/server.js", "app/backnode.js"]
+                src: ["Gruntfile.js", "app/server.js", "app/backnode.js", "admin/js/script.js"]
             },
             test: {
                 options: {
