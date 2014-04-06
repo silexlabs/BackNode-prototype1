@@ -25,3 +25,4 @@ var backnode = Express();
 		res.send(404, 'Not Found');
 	});
 	backnode.listen(process.env.PORT || 8080);
+	console.log('now listening on port ', (process.env.PORT || 8080));

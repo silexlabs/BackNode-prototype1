@@ -48,6 +48,8 @@ this make command will install npm dependencies (express / unifile / grunt / etc
 launch grunt compilation
 and run the project (server.js)
 
+The default port for BackNode is 8080, so now open the URL ```http://localhost:8080/``` in a browser.
+
 ## User Interface
 ![BlackNote user interface](http://img15.hostingpics.net/pics/282120Tutorielstep1.jpg)
 ![BlackNote user interface](http://img15.hostingpics.net/pics/709320Tutorielstep2.jpg)
