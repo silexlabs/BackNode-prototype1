@@ -1,6 +1,6 @@
-make: install
+make: backnode
 
-install: modules build
+backnode: npm build
 
 build: buildGrunt run
 
@@ -21,8 +21,13 @@ brandName:
 	#
 	# runing ...
 
-modules:
+ckeditor:
+	cd ./submodules/ckeditor-dev/ && git pull origin stable
 	./submodules/ckeditor-dev/dev/builder/build.sh
+	cp  -rf ./submodules/ckeditor-dev/dev/builder/release/ckeditor/* ./app/ckeditor/
+
+
+npm:
 	npm install
 
 buildGrunt:
