@@ -1,3 +1,6 @@
 [submodule "submodules/cloud-explorer"]
 	path = submodules/cloud-explorer
 	url = https://github.com/silexlabs/cloud-explorer.git
+[submodule "submodules/ckeditor-dev"]
+	path = submodules/ckeditor-dev
+	url = https://github.com/ckeditor/ckeditor-dev.git

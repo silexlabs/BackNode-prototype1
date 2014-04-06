@@ -1,4 +1,14 @@
-make: build brandName run
+make: install
+
+install: modules build
+
+build: buildGrunt run
+
+run: brandName runNode
+
+
+
+
 
 brandName:
 	#    ____             _    _   _           _
@@ -11,9 +21,12 @@ brandName:
 	#
 	# runing ...
 
-build:
+modules:
+	./submodules/ckeditor-dev/dev/builder/build.sh
 	npm install
+
+buildGrunt:
 	grunt
 
-run:
+runNode:
 	node app/server.js
