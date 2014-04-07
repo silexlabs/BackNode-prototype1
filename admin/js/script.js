@@ -30,16 +30,6 @@ function loadProgress(){
 	}, 500, function(){
 		if(NbObjLoaded / NbObjToLoad === 1) {
 			$('#loader').fadeOut(600);
-			// Check if user has already seen the tutorial
-			if(!~window.document.cookie.indexOf('backnodetuto')) {
-				$('#tutorial').show();
-				setTimeout(function(){
-						// Add a cookie to prevent showing the tutorial again
-						$('#tuto-step1').fadeIn(function(){
-							activeTuto = true;
-						});
-				}, 500);
-			}
 		}
 	});
 }
@@ -188,15 +178,6 @@ $(window.document).ready(function() {
 	$('body').mousedown(function(evt){
 		activeResize = $(evt.target).is($('#resize-icon'));
 	}).mouseup(function(evt){
-		if(activeTuto) {
-			stepTuto++;
-			$('#tuto-step' + stepTuto).fadeIn();
-			if(stepTuto >= 4) {
-				$('#tutorial').fadeOut();
-				window.document.cookie = "backnodetuto=1; expires="+ (new Date()).getTime()+(30*24*60*60*1000) +"; path=/";
-			}
-		}
-		// console.log($(evt.target));
 		if($(evt.target).is($('#CE .close-btn'))) {
 			$('#dark-bgr').hide();
 		}

@@ -27,65 +27,6 @@ body {
 	display: none;
 }
 
-#tutorial {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	z-index: 10;
-	display: none;
-}
-
-#tuto-toolbar {
-	float: left;
-	width: 120px;
-	height: 100%;
-	position: relative;
-	background-image: url('../img/tuto/toolbar.png');
-	background-size: 100% auto;
-	background-repeat: no-repeat;
-}
-
-#tuto-step0, #tuto-step1, #tuto-step2, #tuto-step3 {
-	position: absolute;
-	left: 120px;
-	bottom: 0;
-	right: 0;
-	top: 0;
-	background-size: cover;
-	-moz-background-size: cover;
-	display: none;
-}
-
-#click-continue {
-	cursor:	default;
-	font-family: 'Lato';
-	position: absolute;
-	color: #fff;
-	right: 10px;
-	bottom: 10px;
-	font-size: 16px;
-	z-index: 100;
-}
-
-#tuto-step0 {
-	background-image: url('../img/tuto/step0.jpg');
-	display: block;
-}
-
-#tuto-step1 {
-	background-image: url('../img/tuto/step1.jpg');
-}
-
-#tuto-step2 {
-	background-image: url('../img/tuto/step2.jpg');
-}
-
-#tuto-step3 {
-	background-image: url('../img/tuto/step3.jpg');
-}
-
 #dark-bgr {
 	position: absolute;
 	left: 0;
