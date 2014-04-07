@@ -33,6 +33,8 @@ BackNode.prototype.editor = {
     /*This method allow the user to modify the "data-bn" elements if flagEditable is true. It do the contrary if flagEditable is false */
     editable: function(listEditableContent, flagEditable) {
         var parent = this.parent;
+        var iframeDocument = parent.document;
+        var iframeWindow = parent.iframe.contentWindow;
 
         if (flagEditable === true) {
             for (var key in listEditableContent) {
@@ -47,55 +49,86 @@ BackNode.prototype.editor = {
                         if($(listEditableContent[key]).length > 0) {
                             //active editable element
                             $(listEditableContent[key]).attr('contenteditable', 'true');
-
-                            //active ckeditor on editable element
-                            if (!parent.ckeditor[$(listEditableContent[key]).get(0)]) {
-                                parent.ckeditor[$(listEditableContent[key]).get(0)] = window.CKEDITOR.inline( $(listEditableContent[key]).get(0) );
-                            }
                         }
                     break;
                 }
 
                 //add class hover editable for border color and cursor pointer when mouse over an editable element
                 $(listEditableContent[key]).addClass("hoverEditable");
-
-                //add style node on iframe for css effect hover
-                if (!parent.ckeditor.css) {
-                    parent.ckeditor.css = $('<style>.hoverEditable:hover { outline: 1px dashed #7DBEFF; cursor: pointer}</style>');
-                    $(parent.document.head).append(parent.ckeditor.css);
-                }
             }
+
+            //add style node on iframe for css effect hover
+            if (!parent.ckeditor.css) {
+                parent.ckeditor.css = $('<style>.hoverEditable:hover { outline: 1px dashed #7DBEFF; cursor: pointer}</style>');
+                $(iframeDocument.head).append(parent.ckeditor.css);
+            }
+
+            //active ckeditor on all content editable
+            iframeWindow.CKEDITOR.inlineAll();
         } else {
         /*This function disallow the edition of elements*/
+
             /*remove the picture popin if needed*/
             $(parent.document).find('#bn-popinPicture').remove();
+
             for (var keyb in listEditableContent) {
                 if(listEditableContent[keyb].tagName === "IMG") {
                     $(listEditableContent[keyb]).unbind("click");
                 }  else {
-                    //remove everythings
                     $(listEditableContent[keyb]).removeAttr('contenteditable');
-                    if (parent.ckeditor[$(listEditableContent[keyb]).get(0)]) {
-                        parent.ckeditor[$(listEditableContent[keyb]).get(0)].destroy();
-                        parent.ckeditor[$(listEditableContent[keyb]).get(0)] = null;
-                    }
                 }
 
                 //remove class hover editable for border color and cursor pointer when mouse over an editable element
                 $(listEditableContent[keyb]).removeClass("hoverEditable");
+            }
 
-                //remove style node on iframe for css effect hover
-                if (parent.ckeditor.css) {
-                    parent.ckeditor.css.remove();
-                    parent.ckeditor.css = null;
+            //remove style node on iframe for css effect hover
+            if (parent.ckeditor.css) {
+                parent.ckeditor.css.remove();
+                parent.ckeditor.css = null;
+            }
+
+            //destroy CKEDITOR instance
+            for (var editor in iframeWindow.CKEDITOR.instances) {
+                if (iframeWindow.CKEDITOR.instances.hasOwnProperty(editor)) {
+                    iframeWindow.CKEDITOR.instances[editor].destroy();
                 }
+            }
 
-                //clean ckeditor empty style node ...
-                var s = parent.document.head.getElementsByTagName("style");
-                for(var i in s) {
-                    if (s.hasOwnProperty(i) && s[i].innerHTML === "") {
-                        parent.document.head.removeChild(s[i]);
-                    }
+            //clean ckeditor empty style node ...
+            var s = parent.document.head.getElementsByTagName("style");
+            for(var i in s) {
+                if (s.hasOwnProperty(i) && s[i].innerHTML === "") {
+                    parent.document.head.removeChild(s[i]);
+                }
+            }
+        }
+    },
+
+    //add ckeditor script in the iframe loaded
+    addCkeditor: function(iframeDocument) {
+        var script = iframeDocument.createElement("script");
+        script.src = "/app/ckeditor/ckeditor.js";
+        iframeDocument.body.appendChild(script);
+    },
+
+    //clean all the ckeditor script and misc before saving the document
+    cleanCkeditor: function(iframeDocument) {
+        this.cleanRessource(iframeDocument, "script", ["app/ckeditor/config.js", "app/ckeditor/lang/", "app/ckeditor/styles.js", "app/ckeditor/ckeditor.js"]);
+        this.cleanRessource(iframeDocument, "link", ["app/ckeditor/skins/moono/editor.css"]);
+        this.cleanRessource(iframeDocument, "style", [".cke{visibility:hidden;}"]);
+    },
+
+    //utils to help cleaning different kind of node
+    cleanRessource: function(iframeDocument, type, tabToRemove) {
+        var nodeArray = iframeDocument.getElementsByTagName(type);
+        var l = nodeArray.length;
+
+        for (var node = 0; node < l; node++) {
+            var content = nodeArray[0].src || nodeArray[0].href || nodeArray[0].innerHTML;
+            for (var index in tabToRemove) {
+                if (tabToRemove.hasOwnProperty(index) && content.indexOf(tabToRemove[index]) !== -1) {
+                    nodeArray[0].parentNode.removeChild(nodeArray[0]);
                 }
             }
         }

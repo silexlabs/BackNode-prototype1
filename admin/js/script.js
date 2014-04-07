@@ -20,7 +20,7 @@ var imgAllowed = [
 	'image/gif'
 ];
 
-var NbObjToLoad = 2 + allImages.length;
+var NbObjToLoad = 4 + allImages.length;
 var NbObjLoaded = 0;
 
 function loadProgress(){
@@ -126,6 +126,7 @@ $(window.document).ready(function() {
 				$(backNode.iframe).attr('src', file.url).load(function(){
 					// iFrame loaded
 					backNode.document = this.contentDocument;
+					backNode.editor.addCkeditor(backNode.document);
 					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
 						backNode.explorer.pick(function(file) {
 							var $img = backNode.editingPicture;
@@ -173,9 +174,13 @@ $(window.document).ready(function() {
 		}
 		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
+		backNode.editor.cleanCkeditor(backNode.document);
 		backNode.explorer.save(function(){
 			window.alert('File saved !');
 			$('#dark-bgr').stop().fadeOut(150);
+			$('#tools #editor').toggleClass("switch-on");
+			backNode.iframe.contentWindow.CKEDITOR = null;
+			backNode.editor.addCkeditor(backNode.document);
 		});
 	});
 
