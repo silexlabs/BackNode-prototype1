@@ -1,5 +1,6 @@
 var Express = require('express');
 var Unifile = require('unifile');
+var http = require('http');
 
 var options = Unifile.defaultConfig;
 	options.staticFolders.push(

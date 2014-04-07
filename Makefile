@@ -22,6 +22,7 @@ brandName:
 	# runing ...
 
 ckeditor:
+	git submodule init && git submodule update
 	cd ./submodules/ckeditor-dev/ && git pull origin stable
 	./submodules/ckeditor-dev/dev/builder/build.sh
 	cp  -rf ./submodules/ckeditor-dev/dev/builder/release/ckeditor/* ./app/ckeditor/

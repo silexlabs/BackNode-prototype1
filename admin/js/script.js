@@ -116,7 +116,9 @@ $(window.document).ready(function() {
 				$(backNode.iframe).attr('src', file.url).load(function(){
 					// iFrame loaded
 					backNode.document = this.contentDocument;
-					backNode.editor.addCkeditor(backNode.document);
+					backNode.editor.addCkeditor(backNode.document); //add ckeditor on iframe (rich text editor inline)
+					backNode.git.search.bind(backNode)(file.url, file.filename, $("#deploy")); //search if we have a git repo on dropbox folder tree, and bind a button if we want
+
 					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
 						backNode.explorer.pick(function(file) {
 							var $img = backNode.editingPicture;
@@ -134,7 +136,7 @@ $(window.document).ready(function() {
 					});
 
 					$('#dark-bgr').stop().fadeOut(150);
-					$('#tools ul li:not(#open)').show();
+					$('#tools ul li:not(#open, #deploy)').show();
 					$('#edit-mode').slideDown();
 				});
 			} else {
