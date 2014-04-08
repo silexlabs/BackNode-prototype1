@@ -72,7 +72,10 @@ BackNode.prototype.git = {
         }
     },
     deploy: function() {
-        window.alert("Deploy folder: " + this.git.path);
+        $.get("/grabGit", {"path": this.git.path}, function(response) {
+
+        });
+        //window.alert("Deploy folder: " + this.git.path);
     }
 };
 
