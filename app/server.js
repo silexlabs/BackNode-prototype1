@@ -33,7 +33,9 @@ backnode.use('/grabFolder', Express.bodyParser())
 .use('/', Express.static(__dirname + '/../public'))
 
 .get('/grabFolder', function(req, res) {
-	unigrab.grabFolder(req.param('path'), req, res);
+    var rd = Date.now() * (Math.random() * 10000);
+    var str = rd.toString().replace(".", "");
+	unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, req, res);
 })
 
 .use(function(req, res, next) {
