@@ -1,118 +1,190 @@
 var fs = require('fs');
 var router = require('unifile/lib/core/router.js');
-var currentService = "dropbox";
+var lowEstimatedTimePerRequest = 94.0545455;
+var highEstimatedTimePerRequest = 137.450425;
 
-exports.grabFolder = function(service, remotePath, localPath, req) {
-    exports.createLocalPath(localPath, 0, function(success) {
+exports.grabFolder = function(service, remotePath, localPath, ignorePath, req) {
+    createLocalPath(localPath, 0, function(success) {
         if (success) {
-            //scan the dropbox folder to find a .gitignore if they are
-            exports.scanGitIgnore(service, remotePath, req, function(ignore) {
-                var dlStatus = {start: 0, success: 0, error: 0};
-                //scan the dropbox folder to grab all the files
-                exports.scanPath(service, remotePath, localPath, req, ignore, dlStatus);
-            });
+            var dlStatus = {start: 0, success: 0, error: 0, fileCount: 0, fileList: {}, timeStart: 0};
+            //scan the dropbox folder to grab all the files
+            scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, 5000);
         } else {
             res.send(404);
         }
     });
-}
 
-exports.createLocalPath = function(localPath, current, done) {
-    var tabPath = localPath.split("/");
-    var stringPath = "";
-    var loop = (current === tabPath.length - 1) ? false : true;
+    /////////////////////////////
+    function createLocalPath(localPath, current, done) {
+        var tabPath = localPath.split("/");
+        var stringPath = "";
+        var loop = (current === tabPath.length - 1) ? false : true;
 
-    for (var i = 0; i <= current; i++) {
-        stringPath += tabPath[i] + "/";
-    }
-
-    exports.createFolder(stringPath, function(success) {
-        if (success) {
-            if (loop) {
-                current++;
-                exports.createLocalPath(localPath, current, done);
-            } else {
-                done(true);
-            }
-        } else {
-            done(false);
+        for (var i = 0; i <= current; i++) {
+            stringPath += tabPath[i] + "/";
         }
-    });
-}
 
-exports.createFolder = function(path, done) {
-    fs.exists(path, function(exist) {
-        if (!exist) {
-            fs.mkdir(path, 0777, function(error) {
-                if (error) {
-                    done(false);
+        createFolder(stringPath, function(success) {
+            if (success) {
+                if (loop) {
+                    current++;
+                    createLocalPath(localPath, current, done);
                 } else {
                     done(true);
                 }
-            });
-        } else {
-            done(true);
-        }
-    });
-}
-
-exports.scanPath = function(service, remotePath, localPath, req, ignore, dlStatus) {
-    exports.isIgnore(remotePath, ignore, function(ignored) {
-        if (!ignored) {
-            //console.log("FOLDER: " + remotePath);
-            fs.mkdir(localPath + remotePath);
-            router.route(service, ["exec", "ls", remotePath], req, null, null, function(response, status, reply) {
-                for (var i in reply) {
-                    if (reply[i].is_dir) {
-                        exports.scanPath(service, remotePath + '/' + reply[i].name, localPath, req, ignore, dlStatus);
-                    } else {
-                        exports.grabFile(service, remotePath + '/' + reply[i].name, localPath, req, dlStatus);
-                    }
-                }
-            });
-        }
-    });
-}
-
-exports.grabFile = function(service, filePath, localPath, req, dlStatus) {
-    dlStatus.start++;
-    console.log("dlStatus: " + dlStatus.start + " / " + dlStatus.success + " / " + dlStatus.error);
-    router.route(service, ["exec", "get", filePath], req, null, null, function(response, status, text_content, mime_type) {
-        if (status.success) {
-            dlStatus.success++;
-        } else {
-            dlStatus.error++;
-            console.log(status.code);
-            console.log(filePath);
-            console.log(response);
-        }
-    });
-}
-
-exports.scanGitIgnore = function(service, path, req, done) {
-    var ignore = [];
-    router.route(service, ["exec", "get", path + "/.gitignore"], req, null, null, function(response, status, text_content, mime_type) {
-        if (status.success) {
-            var tmpI = text_content.toString().split("\n");
-            for (var i in tmpI) {
-                if (tmpI.hasOwnProperty(i) && tmpI[i].indexOf("*") === -1 && tmpI[i] !== "") {
-                    ignore.push(tmpI[i]);
-                }
+            } else {
+                done(false);
             }
-        }
+        });
+    }
 
-        done(ignore);
-    });
-}
+    /////////////////////////////
+    function createFolder(path, done) {
+        fs.exists(path, function(exist) {
+            if (!exist) {
+                fs.mkdir(path, 0777, function(error) {
+                    if (error) {
+                        done(false);
+                    } else {
+                        done(true);
+                    }
+                });
+            } else {
+                done(true);
+            }
+        });
+    }
 
-exports.isIgnore = function(path, ignore, done) {
-    var isIgnored = false;
+    //////////////////////////
+    function scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, timeoutGrab) {
+        //check if path is ignored or not
+        isIgnore(remotePath, ignorePath, function(ignored) {
+            if (!ignored) {
+                //scan the given path and redirect to scanPath again or add file in the grab list
+                router.route(service, ["exec", "ls", remotePath], req, null, null, function(response, status, reply) {
 
-    for (var i in ignore) {
-        if (ignore.hasOwnProperty(i) && path.indexOf(ignore[i]) !== -1) {
-            isIgnored = true;
+                    if (status.success) {
+                        //create local directory like remote
+                        createLocalPath(localPath + "/" + remotePath, 0, function(done) {
+                            if (done) {
+                                //scan all the entry in ls request reply
+                                for (var i in reply) {
+                                    var filePath = remotePath + '/' + reply[i].name;
+
+                                    //if it's a directory, scan it
+                                    if (reply[i].is_dir) {
+
+                                        scanPath(service, filePath, localPath, req, ignorePath, dlStatus, timeoutGrab);
+
+                                    } else {
+                                    //else add this file to grab list
+                                        //WARNING ! We must wait to list all the directories before starting to grab files because off dropbox request limit
+                                        dlStatus.fileCount++;
+                                        dlStatus.fileList[filePath] = {
+                                            url: filePath,
+                                            start: false,
+                                            success: false,
+                                            error: false
+                                        }
+                                        console.log("FILES FOUND: " + dlStatus.fileCount);
+                                    }
+                                }
+                            } else {
+                                scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, timeoutGrab);
+                            }
+                        });
+                    } else {
+                        //if we have an error (generally 503), try again later
+                        console.log("error, try later for this path: " + remotePath);
+                        scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, timeoutGrab);
+                    }
+                });
+            }
+
+            if (dlStatus.timeoutGrab) {
+                clearTimeout(dlStatus.timeoutGrab);
+                dlStatus.timeoutGrab = null;
+            }
+
+            //when scan is finished for [timeoutGrab] --> call grab on file
+            dlStatus.timeoutGrab = setTimeout(function() {
+                startToGrabAllFiles(service, localPath, req, dlStatus);
+            }, timeoutGrab);
+        });
+    }
+
+    //////////////////////////
+    function startToGrabAllFiles(service, localPath, req, dlStatus) {
+        console.log("\n");
+        console.log("*************************************************************");
+        console.log("PATH SCANNED !! START TO GRAB " + dlStatus.fileCount + " FILE");
+        console.log("*************************************************************");
+        console.log("ESTIMATE TIME: " + estimateTime(dlStatus.fileCount));
+        console.log("*************************************************************");
+        console.log("\n");
+        dlStatus.timeStart = Date.now();
+        for (var i in dlStatus.fileList) {
+            grabFile(service, dlStatus.fileList[i].url, localPath, req, dlStatus);
         }
     }
 
-    done(isIgnored);
+    //////////////////////////
+    function grabFile(service, filePath, localPath, req, dlStatus) {
+        //prevent from werd issue
+        if (dlStatus.fileList[filePath].success) {
+            return;
+        }
+
+        if (!dlStatus.fileList[filePath].start) {
+            dlStatus.fileList[filePath].start = true;
+            dlStatus.start++;
+        }
+
+        router.route(service, ["exec", "get", filePath], req, null, null, function(response, status, text_content, mime_type) {
+            if (status.success) {
+                dlStatus.success++;
+                dlStatus.fileList[filePath].success = true;
+                fs.writeFile(localPath + "/" + filePath, text_content);
+            } else {
+                dlStatus.error++;
+                dlStatus.fileList[filePath].error = true;
+                grabFile(service, dlStatus.fileList[filePath].url, localPath, req, dlStatus);
+            }
+
+            console.log("DLSTATUS: " +
+                dlStatus.start + " / " +
+                dlStatus.success + " / " +
+                dlStatus.error + "  (total/success/error) TIME LEFT: " + estimateTime(dlStatus.fileCount - dlStatus.success));
+
+            if (dlStatus.success === dlStatus.fileCount) {
+                var timeElapsed = (Date.now() - dlStatus.timeStart);
+                console.log("GRAB END ON: " + timeElapsed + "ms");
+            }
+        });
+    }
+
+    ///////////////////////////
+    function isIgnore(path, ignorePath, done) {
+        var isIgnored = false;
+
+        for (var i in ignorePath) {
+            if (ignorePath.hasOwnProperty(i) && path.indexOf(ignorePath[i]) !== -1) {
+                isIgnored = true;
+            }
+        }
+
+        done(isIgnored);
+    }
+
+    ///////////////////////////
+    function estimateTime(nbRequest) {
+        var duration, time, returnTime;
+
+        duration = nbRequest <= 200 ? lowEstimatedTimePerRequest : highEstimatedTimePerRequest;
+        time = nbRequest * duration;
+        returnTime = time >= 60000 ? parseInt((time / 1000) / 60) : parseInt(time / 1000);
+        returnUnit = time >= 60000 ? "mn" : "s";
+
+        return (returnTime + returnUnit);
+    }
 }
