@@ -1,13 +1,17 @@
 make: backnode
 
-backnode: npm build
+backnode: npmAndBowerUpdate build
 
 build: buildGrunt run
 
 run: brandName runNode
 
+install: installLocal ckeditor build
+
+heroku: installLocal build
 
 
+##########################################################
 
 
 brandName:
@@ -21,17 +25,25 @@ brandName:
 	#
 	# runing ...
 
+installLocal:
+	sudo npm i -g bower
+	sudo npm i -g grunt-cli
+	bower install bootstrap
+	npm install
+
 ckeditor:
 	git submodule init && git submodule update
 	cd ./submodules/ckeditor-dev/ && git pull origin stable
 	./submodules/ckeditor-dev/dev/builder/build.sh
 	cp  -rf ./submodules/ckeditor-dev/dev/builder/release/ckeditor/* ./app/ckeditor/
 
-
-npm:
+npmAndBowerUpdate:
+	#If you have not bower, call "make install" before all
+	bower update
 	npm install
 
 buildGrunt:
+	#If you have not grunt, call "make install" before all
 	grunt
 
 runNode:

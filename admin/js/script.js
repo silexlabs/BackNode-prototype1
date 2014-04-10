@@ -20,7 +20,7 @@ var imgAllowed = [
 	'image/gif'
 ];
 
-var NbObjToLoad = 4 + allImages.length;
+var NbObjToLoad = 5 + allImages.length;
 var NbObjLoaded = 0;
 
 function loadProgress(){
@@ -167,7 +167,7 @@ $(window.document).ready(function() {
 		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.editor.cleanCkeditor(backNode.document);
-		backNode.explorer.save(function(){
+		backNode.explorer.save.bind(backNode)(function(){
 			window.alert('File saved !');
 			$('#dark-bgr').stop().fadeOut(150);
 			$('#tools #editor').toggleClass("switch-on");

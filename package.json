@@ -8,7 +8,6 @@
   		"cookie-session": "~1.0.x",
 		"unifile": "*",
 		"grunt": "*",
-		"grunt-cli": "*",
 		"grunt-contrib-jshint": "*",
 		"grunt-contrib-uglify": "*"
 	}

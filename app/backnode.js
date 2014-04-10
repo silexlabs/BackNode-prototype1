@@ -7,6 +7,7 @@ var BackNode = function(iframe) {
     this.baliseSearch.parent = this;
     this.ckeditor = {};
     this.gitPath = null;
+    this.fileSaved = [];
 };
 
 BackNode.prototype.explorer = {
@@ -26,7 +27,13 @@ BackNode.prototype.explorer = {
         var iframe = $('iframe')[0].contentDocument;
         var serializer = new XMLSerializer();
         var content = serializer.serializeToString(iframe);
-        cloudExplorer.write(backNode.file, content, callback);
+        cloudExplorer.write(backNode.file, content, function() {
+            if (this.fileSaved.indexOf(this.iframe.src) === -1) {
+                this.fileSaved.push(this.iframe.src);
+                console.log(this.fileSaved);
+            }
+            callback();
+        }.bind(this));
     }
 };
 
@@ -35,7 +42,11 @@ BackNode.prototype.git = {
     search: function(filePath, fileName, deployButton) {
         //reset previous git directory path
         this.git.path = null;
-        this.git.deployButton = deployButton;
+
+        if (!this.git.deployButton) {
+            this.git.deployButton = deployButton;
+            this.git.deployButton.on("click", this.git.deploy.bind(this));
+        }
 
         //retrieve dropbox path (replace unifile path and filename with blank)
         var dropboxPath = filePath.replace("../api/v1.0/dropbox/exec/get/", "").replace(fileName, "");
@@ -58,24 +69,31 @@ BackNode.prototype.git = {
     },
     //check in a folders array if we have a .git
     isGitDirectory: function(resultPath, unifileResponse) {
+        //this.git.deployButton.hide();
         if (unifileResponse.length && !this.git.path) {
             for (var unifileObject in unifileResponse) {
                 if (unifileResponse.hasOwnProperty(unifileObject) && unifileResponse[unifileObject].name && unifileResponse[unifileObject].name === ".git") {
                     this.git.path = resultPath;
-
                     if (this.git.deployButton) {
                         this.git.deployButton.show();
-                        this.git.deployButton.on("click", this.git.deploy.bind(this));
                     }
                 }
             }
         }
     },
     deploy: function() {
-        $.get("/deploy/git", {"path": this.git.path}, function(response) {
+        var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE'> TO_REPLACE </label></div>";
+        console.log(this.fileSaved);
+        for (var i in this.fileSaved) {
+            if (this.fileSaved.hasOwnProperty(i)) {
+                console.log(this.fileSaved[i]);
+                $('.modal-body').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
+            }
+        }
+        $('.modal').modal('show');
+        /*$.get("/deploy/git", {"path": this.git.path}, function(response) {
 
-        });
-        //window.alert("Deploy folder: " + this.git.path);
+        });*/
     }
 };
 

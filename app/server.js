@@ -31,6 +31,7 @@ backnode.use('/deploy', Express.bodyParser())
 .use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib'))
 .use('/app', Express.static(__dirname + '/../app'))
 .use('/admin', Express.static(__dirname + '/../admin'))
+.use('/bower_components', Express.static(__dirname + '/../bower_components'))
 .use('/', Express.static(__dirname + '/../public'))
 
 .get('/deploy/:type', function(req, res) {
