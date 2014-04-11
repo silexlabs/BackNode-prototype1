@@ -17,6 +17,7 @@ var options = Unifile.defaultConfig;
     );
 
 var backnode = Express();
+var status = {code: ""};
 
 //To use unifile as an api
 backnode.use('/deploy', Express.bodyParser())
@@ -45,13 +46,15 @@ backnode.use('/deploy', Express.bodyParser())
          * http://localhost:8080/deploy/git?path=DROPBOX_FOLDER_TO_GRAB
          * and see download logs on your terminal
          */
-        unigit.grabGit("dropbox", req.param('path'), "tempFolder/" + str, req);
+        unigit.grabGit("dropbox", req.param('path'), "tempFolder/" + str, req, status);
+    } else if (req.param('type') === 'status') {
+        res.write(JSON.stringify(status));
     } else {
         /* grab a folder (not just .git)
          * you can test this feature with an url in your navigator used to connect to dropbox like this: http://localhost:8080/deploy/other?path=DROPBOX_FOLDER_TO_GRAB
          * and see download logs on your terminal
          */
-        unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, null, req);
+        unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, null, req, status);
     }
 
     res.send();

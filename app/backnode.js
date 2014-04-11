@@ -29,8 +29,7 @@ BackNode.prototype.explorer = {
         var content = serializer.serializeToString(iframe);
         cloudExplorer.write(backNode.file, content, function() {
             if (this.fileSaved.indexOf(this.iframe.src) === -1) {
-                this.fileSaved.push(this.iframe.src);
-                console.log(this.fileSaved);
+                this.fileSaved.push(this.iframe.src.replace("http://" + window.location.host + "/api/v1.0/dropbox/exec/get/", ""));
             }
             callback();
         }.bind(this));
@@ -45,7 +44,8 @@ BackNode.prototype.git = {
 
         if (!this.git.deployButton) {
             this.git.deployButton = deployButton;
-            this.git.deployButton.on("click", this.git.deploy.bind(this));
+            this.git.deployButton.on("click", this.git.showDeployWindow.bind(this));
+            $('#deployModalButton').on("click", this.git.deploy.bind(this));
         }
 
         //retrieve dropbox path (replace unifile path and filename with blank)
@@ -81,19 +81,49 @@ BackNode.prototype.git = {
             }
         }
     },
-    deploy: function() {
-        var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE'> TO_REPLACE </label></div>";
-        console.log(this.fileSaved);
-        for (var i in this.fileSaved) {
-            if (this.fileSaved.hasOwnProperty(i)) {
-                console.log(this.fileSaved[i]);
-                $('.modal-body').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
-            }
-        }
-        $('.modal').modal('show');
-        /*$.get("/deploy/git", {"path": this.git.path}, function(response) {
+    showDeployWindow: function() {
+        var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>";
+        $('.modal-body #chooseFiles').html("");
+        $('.modal-body #chooseFiles').show();
+        $('.modal-body #deployOnGoing').hide();
 
-        });*/
+        if (this.fileSaved.length > 0) {
+            for (var i in this.fileSaved) {
+                if (this.fileSaved.hasOwnProperty(i)) {
+                    $('.modal-body #chooseFiles').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
+                }
+            }
+            $('#deployModalButton').removeClass('disabled');
+        } else {
+            $('.modal-body #chooseFiles').append("You haven't save any files, so nothing to deploy...");
+            $('#deployModalButton').addClass('disabled');
+        }
+
+        $('.modal').modal('show');
+    },
+    deploy: function() {
+        var fileToDeploy = [];
+        var _this = this;
+
+        $('.modal-body #chooseFiles input').each(function() {
+            if (this.checked) {
+                _this.fileSaved.splice(_this.fileSaved.indexOf(this.name), 1); //delete the entry to deploy off the fileSaved table (use to know how file can be deploy)
+                fileToDeploy.push(this.name);
+            }
+        });
+
+        $('.modal-body #deployOnGoing').show();
+        $('.modal-body #chooseFiles').hide();
+        $('#deployModalButton').addClass('disabled');
+
+        $.get("/deploy/git", {"path": this.git.path, "files": fileToDeploy}, function(response) {
+            this.git.intervalDeployStatus = setInterval(this.git.getDeployStatus.bind(this), 200);
+        }.bind(this));
+    },
+    getDeployStatus: function() {
+        $.get("/deploy/status", null, function(response) {
+            $('#deployOnGoing .progress span').html(response.code);
+        }.bind(this));
     }
 };
 

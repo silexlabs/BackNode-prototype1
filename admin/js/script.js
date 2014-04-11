@@ -137,7 +137,9 @@ $(window.document).ready(function() {
 
 					$('#dark-bgr').stop().fadeOut(150);
 					$('#tools ul li:not(#open, #deploy)').show();
-					$('#edit-mode').slideDown();
+					$('#edit-mode').slideDown(function() {
+						$(window).resize();
+					});
 				});
 			} else {
 				window.alert('Invalid extension !');

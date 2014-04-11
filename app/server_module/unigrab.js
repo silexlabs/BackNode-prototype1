@@ -3,7 +3,9 @@ var router = require('unifile/lib/core/router.js');
 var lowEstimatedTimePerRequest = 94.0545455;
 var highEstimatedTimePerRequest = 137.450425;
 
-exports.grabFolder = function(service, remotePath, localPath, ignorePath, req) {
+exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, statusDownload) {
+    statusDownload.code = "download started";
+
     createLocalPath(localPath, 0, function(success) {
         if (success) {
             var dlStatus = {start: 0, success: 0, error: 0, fileCount: 0, fileList: {}, timeStart: 0};
@@ -87,6 +89,7 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req) {
                                             error: false
                                         }
                                         console.log("FILES FOUND: " + dlStatus.fileCount);
+                                        statusDownload.code = "files found: " + dlStatus.fileCount;
                                     }
                                 }
                             } else {
@@ -115,6 +118,7 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req) {
 
     //////////////////////////
     function startToGrabAllFiles(service, localPath, req, dlStatus) {
+        statusDownload.code = "start downloading files";
         console.log("\n");
         console.log("*************************************************************");
         console.log("PATH SCANNED !! START TO GRAB " + dlStatus.fileCount + " FILE");
@@ -151,14 +155,16 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req) {
                 grabFile(service, dlStatus.fileList[filePath].url, localPath, req, dlStatus);
             }
 
+            statusDownload.code = "download status: " + dlStatus.success + "/" + dlStatus.start;
             console.log("DLSTATUS: " +
                 dlStatus.start + " / " +
                 dlStatus.success + " / " +
                 dlStatus.error + "  (total/success/error) TIME LEFT: " + estimateTime(dlStatus.fileCount - dlStatus.success));
 
             if (dlStatus.success === dlStatus.fileCount) {
-                var timeElapsed = (Date.now() - dlStatus.timeStart);
-                console.log("GRAB END ON: " + timeElapsed + "ms");
+                var timeElapsed = (Date.now() - dlStatus.timeStart) / 1000;
+                console.log("GRAB END ON: " + timeElapsed + "s");
+                statusDownload.code = "download finished on: " + timeElapsed + "s";
             }
         });
     }
