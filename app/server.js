@@ -1,8 +1,11 @@
-var Express = require('express');
-var Unifile = require('unifile');
-var http = require('http');
-var unigit = require('./server_module/unigit.js');
-var unigrab = require('./server_module/unigrab.js');
+var Express = require('express'),
+Unifile = require('unifile'),
+http = require('http'),
+unigit = require('./server_module/unigit.js'),
+unigrab = require('./server_module/unigrab.js'),
+bodyParser = require('body-parser'),
+cookieParser = require('cookie-parser'),
+cookieSession = require('cookie-session');
 
 var options = Unifile.defaultConfig;
     options.staticFolders.push(
@@ -20,9 +23,9 @@ var backnode = Express();
 var status = {code: ""};
 
 //To use unifile as an api
-backnode.use('/deploy', Express.bodyParser())
-.use('/deploy', Express.cookieParser())
-.use('/deploy', Express.cookieSession({ secret: 'plum plum plum'}))
+backnode.use('/deploy', bodyParser())
+.use('/deploy', cookieParser())
+.use('/deploy', cookieSession({ secret: 'plum plum plum'}))
 
 //Unifile
 .use(Unifile.middleware(Express, backnode, options))
