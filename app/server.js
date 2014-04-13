@@ -5,6 +5,7 @@ unigit = require('./server_module/unigit.js'),
 unigrab = require('./server_module/unigrab.js'),
 bodyParser = require('body-parser'),
 cookieParser = require('cookie-parser'),
+io = require('socket.io').listen(8000),
 cookieSession = require('cookie-session');
 
 var options = Unifile.defaultConfig;
@@ -20,7 +21,6 @@ var options = Unifile.defaultConfig;
     );
 
 var backnode = Express();
-var status = {code: ""};
 
 //To use unifile as an api
 backnode.use('/deploy', bodyParser())
@@ -32,6 +32,7 @@ backnode.use('/deploy', bodyParser())
 
 //static
 .use('/submodules', Express.static(__dirname + '/../submodules'))
+.use('/node_modules', Express.static(__dirname + '/../node_modules'))
 .use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib'))
 .use('/app', Express.static(__dirname + '/../app'))
 .use('/admin', Express.static(__dirname + '/../admin'))
@@ -49,17 +50,17 @@ backnode.use('/deploy', bodyParser())
          * http://localhost:8080/deploy/git?path=DROPBOX_FOLDER_TO_GRAB
          * and see download logs on your terminal
          */
-        unigit.grabGit("dropbox", req.param('path'), "tempFolder/" + str, req, status);
-    } else if (req.param('type') === 'status') {
-        res.write(JSON.stringify(status));
+
+        unigit.grabGit("dropbox", req.param('path'), "tempFolder/" + str, req, {io: io, key: str});
     } else {
         /* grab a folder (not just .git)
          * you can test this feature with an url in your navigator used to connect to dropbox like this: http://localhost:8080/deploy/other?path=DROPBOX_FOLDER_TO_GRAB
          * and see download logs on your terminal
          */
-        unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, null, req, status);
+        unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, null, req, {io: io, key: str});
     }
 
+    res.write(JSON.stringify({socketKey: str}));
     res.send();
 })
 
@@ -69,4 +70,5 @@ backnode.use('/deploy', bodyParser())
 });
 
 backnode.listen(process.env.PORT || 8080);
+
 console.log('now listening on port ', (process.env.PORT || 8080));

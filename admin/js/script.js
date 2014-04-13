@@ -20,7 +20,7 @@ var imgAllowed = [
 	'image/gif'
 ];
 
-var NbObjToLoad = 5 + allImages.length;
+var NbObjToLoad = 6 + allImages.length;
 var NbObjLoaded = 0;
 
 function loadProgress(){

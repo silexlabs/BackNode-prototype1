@@ -117,13 +117,17 @@ BackNode.prototype.git = {
         $('#deployModalButton').addClass('disabled');
 
         $.get("/deploy/git", {"path": this.git.path, "files": fileToDeploy}, function(response) {
-            this.git.intervalDeployStatus = setInterval(this.git.getDeployStatus.bind(this), 200);
+            if (!this.git.socket) {
+                this.git.socket = io.connect("http://" + window.location.hostname + ":8000");
+            }
+            this.git.socket.on(JSON.parse(response).socketKey, this.git.getDeployStatus.bind(this));
         }.bind(this));
     },
-    getDeployStatus: function() {
-        $.get("/deploy/status", null, function(response) {
-            $('#deployOnGoing .progress span').html(response.code);
-        }.bind(this));
+    getDeployStatus: function(data) {
+        $('#deployOnGoing .progress span').html(data.code);
+        if (data.code.indexOf("download finished") === 0) {
+            this.git.socket.disconnect();
+        }
     }
 };
 

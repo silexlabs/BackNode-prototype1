@@ -3,8 +3,8 @@ var router = require('unifile/lib/core/router.js');
 var lowEstimatedTimePerRequest = 94.0545455;
 var highEstimatedTimePerRequest = 137.450425;
 
-exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, statusDownload) {
-    statusDownload.code = "download started";
+exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, socketIoConfig) {
+    ioEmit("scan your " + service + "path");
 
     createLocalPath(localPath, 0, function(success) {
         if (success) {
@@ -88,18 +88,17 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, s
                                             success: false,
                                             error: false
                                         }
-                                        console.log("FILES FOUND: " + dlStatus.fileCount);
-                                        statusDownload.code = "files found: " + dlStatus.fileCount;
+                                        ioEmit("files found: " + dlStatus.fileCount);
                                     }
                                 }
                             } else {
                                 scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, timeoutGrab);
                             }
                         });
-                    } else {
+                    } else if (status.code === 503){
                         //if we have an error (generally 503), try again later
-                        console.log("error, try later for this path: " + remotePath);
                         scanPath(service, remotePath, localPath, req, ignorePath, dlStatus, timeoutGrab);
+                        ioEmit("dropbox api request limit, need to wait a little");
                     }
                 });
             }
@@ -118,7 +117,7 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, s
 
     //////////////////////////
     function startToGrabAllFiles(service, localPath, req, dlStatus) {
-        statusDownload.code = "start downloading files";
+        ioEmit("start downloading files");
         console.log("\n");
         console.log("*************************************************************");
         console.log("PATH SCANNED !! START TO GRAB " + dlStatus.fileCount + " FILE");
@@ -155,16 +154,11 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, s
                 grabFile(service, dlStatus.fileList[filePath].url, localPath, req, dlStatus);
             }
 
-            statusDownload.code = "download status: " + dlStatus.success + "/" + dlStatus.start;
-            console.log("DLSTATUS: " +
-                dlStatus.start + " / " +
-                dlStatus.success + " / " +
-                dlStatus.error + "  (total/success/error) TIME LEFT: " + estimateTime(dlStatus.fileCount - dlStatus.success));
+            ioEmit("download status: " + dlStatus.success + "/" + dlStatus.start);
 
             if (dlStatus.success === dlStatus.fileCount) {
                 var timeElapsed = (Date.now() - dlStatus.timeStart) / 1000;
-                console.log("GRAB END ON: " + timeElapsed + "s");
-                statusDownload.code = "download finished on: " + timeElapsed + "s";
+                ioEmit("download finished on: " + timeElapsed + "s");
             }
         });
     }
@@ -192,5 +186,11 @@ exports.grabFolder = function(service, remotePath, localPath, ignorePath, req, s
         returnUnit = time >= 60000 ? "mn" : "s";
 
         return (returnTime + returnUnit);
+    }
+
+    function ioEmit(message) {
+        if (socketIoConfig && socketIoConfig.io && socketIoConfig.key) {
+            socketIoConfig.io.sockets.emit(socketIoConfig.key, {code: message});
+        }
     }
 }
