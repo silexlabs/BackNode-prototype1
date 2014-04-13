@@ -9,16 +9,18 @@ io = require('socket.io').listen(8000),
 cookieSession = require('cookie-session');
 
 var options = Unifile.defaultConfig;
-    options.staticFolders.push(
-        {
-            name: '/cloud-explorer',
-            path: '../../../../submodules/cloud-explorer/lib/app/'
-        },
-        {
-            name: '/cetest',
-            path: '../../../../submodules/cloud-explorer/lib/app/'
-        }
-    );
+options.staticFolders.push(
+    {
+        name: '/cloud-explorer',
+        path: '../../../../submodules/cloud-explorer/lib/app/'
+    },
+    {
+        name: '/cetest',
+        path: '../../../../submodules/cloud-explorer/lib/app/'
+    }
+);
+
+var pathFileInfo = {};
 
 var backnode = Express();
 
@@ -40,27 +42,37 @@ backnode.use('/deploy', bodyParser())
 .use('/', Express.static(__dirname + '/../public'))
 
 .get('/deploy/:type', function(req, res) {
-    var rd = Date.now() * (Math.random() * 10000);
-    var str = rd.toString().replace(".", "");
+    if (req.param('type') === 'scan') {
 
-    if (req.param('type') === 'git') {
-        /* grab the .git folder on user remote directory (we don't need other files to deploy modification)
-         * unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
-         * you can test this feature with an url in your navigator used to connect to dropbox like this:
-         * http://localhost:8080/deploy/git?path=DROPBOX_FOLDER_TO_GRAB
-         * and see download logs on your terminal
-         */
+        var rd = Date.now() * (Math.random() * 10000);
+        var deployKey = rd.toString().replace(".", "");
 
-        unigit.grabGit("dropbox", req.param('path'), "tempFolder/" + str, req, {io: io, key: str});
-    } else {
-        /* grab a folder (not just .git)
-         * you can test this feature with an url in your navigator used to connect to dropbox like this: http://localhost:8080/deploy/other?path=DROPBOX_FOLDER_TO_GRAB
-         * and see download logs on your terminal
-         */
-        unigrab.grabFolder("dropbox", req.param('path'), "tempFolder/" + str, null, req, {io: io, key: str});
+        unigit.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
+            unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, {io: io, key: deployKey}, function(pathInfos) {
+                unigrab.ioEmit({io: io, key: deployKey}, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
+                pathFileInfo[deployKey] = pathInfos;
+            });
+        });
+
+        res.write(JSON.stringify({deployKey: deployKey}));
+
+    } else if (req.param('deployKey')) {
+
+        if (req.param('type') === 'git') {
+            // grab the .git folder on user remote directory (we don't need other files to deploy modification)
+            // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
+            unigit.grabGit("dropbox", "tempFolder/" + req.param('deployKey'), req.param('path'), req, {io: io, key: req.param('deployKey')}, function(message) {
+                unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
+            });
+        } else {
+            // grab a folder (not just .git)
+            unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: io, key: req.param('deployKey')}, function(message) {
+                unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
+            });
+        }
+
     }
 
-    res.write(JSON.stringify({socketKey: str}));
     res.send();
 })
 

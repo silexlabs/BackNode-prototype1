@@ -46,6 +46,7 @@ BackNode.prototype.git = {
             this.git.deployButton = deployButton;
             this.git.deployButton.on("click", this.git.showDeployWindow.bind(this));
             $('#deployModalButton').on("click", this.git.deploy.bind(this));
+            $('#deployGitModalButton').on("click", this.git.showDeploySaved.bind(this));
         }
 
         //retrieve dropbox path (replace unifile path and filename with blank)
@@ -82,26 +83,58 @@ BackNode.prototype.git = {
         }
     },
     showDeployWindow: function() {
-        var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>";
-        $('.modal-body #chooseFiles').html("");
-        $('.modal-body #chooseFiles').show();
-        $('.modal-body #deployOnGoing').hide();
+        $('.modal-body #chooseFiles').hide();
+        $('.modal-body #deployOnGoing').show();
+        $('#deployModalButton').show();
+        $('.modal-body #deployOnGoing p').show();
+        $('#deployGitModalButton').removeClass('disabled');
+        $('#deployModalButton').addClass('disabled');
 
-        if (this.fileSaved.length > 0) {
-            for (var i in this.fileSaved) {
-                if (this.fileSaved.hasOwnProperty(i)) {
-                    $('.modal-body #chooseFiles').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
-                }
+        $.get("/deploy/scan", {"path": this.git.path}, function(response) {
+            this.git.deployKey = JSON.parse(response).deployKey;
+            if (!this.git.socket) {
+                this.git.socket = io.connect("http://" + window.location.hostname + ":8000");
             }
-            $('#deployModalButton').removeClass('disabled');
-        } else {
-            $('.modal-body #chooseFiles').append("You haven't save any files, so nothing to deploy...");
-            $('#deployModalButton').addClass('disabled');
-        }
+            this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
+        }.bind(this));
 
         $('.modal').modal('show');
     },
+    showDeploySaved: function() {
+        if ($('.modal-body #chooseFiles').html() !== "") {
+            $('.modal-body #chooseFiles').html("");
+            $('.modal-body #deployOnGoing p').hide();
+            $('.modal-body #deployOnGoing').show();
+            this.git.deployJustGit.bind(this)();
+        } else {
+            var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>";
+            $('.modal-body #chooseFiles').show();
+            $('.modal-body #deployOnGoing').hide();
+            $('#deployModalButton').hide();
+            $('.modal-title').html("Please select some files to deploy");
+            $('#deployGitModalButton').addClass('disabled');
+
+            if (this.fileSaved.length > 0) {
+                for (var i in this.fileSaved) {
+                    if (this.fileSaved.hasOwnProperty(i)) {
+                        $('.modal-body #chooseFiles').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
+                    }
+                }
+                $('#deployGitModalButton').removeClass('disabled');
+            } else {
+                $('.modal-body #chooseFiles').append("You haven't save any files, so nothing to deploy...");
+                $('#deployGitModalButton').addClass('disabled');
+            }
+        }
+    },
     deploy: function() {
+        $('#deployModalButton').addClass('disabled');
+        $('#deployGitModalButton').addClass('disabled');
+        $('.modal-body #deployOnGoing p').hide();
+
+        $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey});
+    },
+    deployJustGit: function() {
         var fileToDeploy = [];
         var _this = this;
 
@@ -112,21 +145,22 @@ BackNode.prototype.git = {
             }
         });
 
-        $('.modal-body #deployOnGoing').show();
-        $('.modal-body #chooseFiles').hide();
         $('#deployModalButton').addClass('disabled');
+        $('#deployGitModalButton').addClass('disabled');
 
-        $.get("/deploy/git", {"path": this.git.path, "files": fileToDeploy}, function(response) {
-            if (!this.git.socket) {
-                this.git.socket = io.connect("http://" + window.location.hostname + ":8000");
-            }
-            this.git.socket.on(JSON.parse(response).socketKey, this.git.getDeployStatus.bind(this));
-        }.bind(this));
+        //TODO must be finished
+        $.get("/deploy/git", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
     },
     getDeployStatus: function(data) {
         $('#deployOnGoing .progress span').html(data.code);
+
+        if (data.code.indexOf("total files") === 0) {
+           $('#deployModalButton').removeClass('disabled');
+           $('#deployModalButton').html("Deploy folder (" + data.code.split("estimate duration: ")[1] + ")");
+        }
         if (data.code.indexOf("download finished") === 0) {
-            this.git.socket.disconnect();
+            //this.git.socket.disconnect();
+            //this.git.socket = null;
         }
     }
 };

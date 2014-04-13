@@ -2,9 +2,12 @@ var router = require('unifile/lib/core/router.js');
 var unigrab = require('./unigrab.js');
 
 //grab the .git folder on the remotePath given
-exports.grabGit = function(service, remotePath, localPath, req, socketIoConfig) {
-    exports.scanGitIgnore(service, remotePath, req, function(ignorePath) {
-        unigrab.grabFolder(service, remotePath + "/.git", localPath, ignorePath, req, socketIoConfig);
+exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
+    unigrab.scanPath(service, localPath, remotePath + "/.git", null, req, socketIoConfig, function(pathInfos) {
+        unigrab.ioEmit(socketIoConfig, "total files git: " + pathInfos.fileCount);
+        unigrab.grabFolder(service, localPath, pathInfos, req, socketIoConfig, function(message) {
+            done(message);
+        });
     });
 }
 

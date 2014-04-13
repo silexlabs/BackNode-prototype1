@@ -23,13 +23,13 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">Choose some files to deploy</h4>
+            <h4 class="modal-title">Please wait, we scan your remote folder</h4>
           </div>
           <div class="modal-body">
-                <div id="chooseFiles">
-
-                </div>
+                <div id="chooseFiles"></div>
                 <div id="deployOnGoing">
+                    <p>If it's too long (> 10 000 files), your project are maybe to big to grab all the informations, so you can deploy just the last saved files to (since you have opened BackNode)</p>
+                    <p>Otherwise, please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
                     <div class="progress progress-striped active">
                       <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                         <span></span>
@@ -39,7 +39,8 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" id="deployModalButton">Deploy</button>
+            <button type="button" class="btn btn-warning" id="deployGitModalButton">Deploy last saved files</button>
+            <button type="button" class="btn btn-primary" id="deployModalButton">Deploy folder (waiting for scan finished)</button>
           </div>
         </div><!-- /.modal-content -->
       </div><!-- /.modal-dialog -->
