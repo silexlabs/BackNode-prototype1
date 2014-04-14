@@ -33,38 +33,47 @@ backnode.use('/deploy', bodyParser())
 .use('/', Express.static(__dirname + '/../submodules/cloud-explorer/'))
 
 .get('/deploy/:type', function(req, res) {
-    if (req.param('type') === 'scan') {
+    switch (req.param('type')) {
 
-        var rd = Date.now() * (Math.random() * 10000);
-        var deployKey = rd.toString().replace(".", "");
-
-        unigit.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
-            unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, {io: io, key: deployKey}, function(pathInfos) {
-                unigrab.ioEmit({io: io, key: deployKey}, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
-                pathFileInfo[deployKey] = pathInfos;
+        case 'searchGit':
+            unigit.find("dropbox", req.param('path'), req, function(isGit) {
+                res.write(JSON.stringify({git: isGit}));
+                res.send();
             });
-        });
+        break;
 
-        res.write(JSON.stringify({deployKey: deployKey}));
+        case 'scan':
+            var rd = Date.now() * (Math.random() * 10000);
+            var deployKey = rd.toString().replace(".", "");
 
-    } else if (req.param('deployKey')) {
+            unigit.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
+                unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, {io: io, key: deployKey}, function(pathInfos) {
+                    unigrab.ioEmit({io: io, key: deployKey}, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
+                    pathFileInfo[deployKey] = pathInfos;
+                });
+            });
 
-        if (req.param('type') === 'git') {
+            res.write(JSON.stringify({deployKey: deployKey}));
+            res.send();
+        break;
+
+        case 'git':
             // grab the .git folder on user remote directory (we don't need other files to deploy modification)
             // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
             unigit.grabGit("dropbox", "tempFolder/" + req.param('deployKey'), req.param('path'), req, {io: io, key: req.param('deployKey')}, function(message) {
                 unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
             });
-        } else {
+            res.send();
+        break;
+
+        default :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: io, key: req.param('deployKey')}, function(message) {
                 unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
             });
-        }
-
+            res.send();
+        break;
     }
-
-    res.send();
 })
 
 .use(function(req, res, next) {

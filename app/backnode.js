@@ -51,36 +51,16 @@ BackNode.prototype.git = {
 
         //retrieve dropbox path (replace unifile path and filename with blank)
         var dropboxPath = filePath.replace("../api/v1.0/dropbox/exec/get/", "").replace(fileName, "");
-        var unifilePath = "/api/v1.0/dropbox/exec/ls/";
-        var treeIndex = dropboxPath.split("/");
-            treeIndex.pop(); //delete first blank entry
 
-        //walk up into the dropbox directory to find a .git directory
-        while (treeIndex !== null) {
-            var treePath = (treeIndex.length >= 1) ? treeIndex.join("/") : "";
-
-            $.get(unifilePath + treePath, null, this.git.isGitDirectory.bind(this, treePath));
-
-            if (treeIndex.length > 0) {
-                treeIndex.pop();
-            } else {
-                treeIndex = null;
-            }
-        }
-    },
-    //check in a folders array if we have a .git
-    isGitDirectory: function(resultPath, unifileResponse) {
-        //this.git.deployButton.hide();
-        if (unifileResponse.length && !this.git.path) {
-            for (var unifileObject in unifileResponse) {
-                if (unifileResponse.hasOwnProperty(unifileObject) && unifileResponse[unifileObject].name && unifileResponse[unifileObject].name === ".git") {
-                    this.git.path = resultPath;
-                    if (this.git.deployButton) {
-                        this.git.deployButton.show();
-                    }
+        $.get("/deploy/searchGit", {"path": dropboxPath}, function(response) {
+            var d = JSON.parse(response);
+            if (d.git) {
+                this.git.path = d.git;
+                if (this.git.deployButton) {
+                    this.git.deployButton.show();
                 }
             }
-        }
+        }.bind(this));
     },
     showDeployWindow: function() {
         $('.modal-body #chooseFiles').hide();

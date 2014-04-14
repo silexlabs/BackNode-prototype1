@@ -27,3 +27,44 @@ exports.scanGitIgnore = function(service, remotePath, req, done) {
         done(ignorePath);
     });
 }
+
+exports.find = function(service, remotePath, req, done) {
+    var gitPath = null;
+
+    var treeIndex = remotePath.split("/");
+        treeIndex.pop(); //delete first blank entry
+
+    inspectPath(treeIndex);
+
+    function inspectPath(currentTab) {
+        var current = (currentTab.length >= 1) ? currentTab.join("/") : "";
+
+        router.route(service, ["exec", "ls", current], req, null, null, function(response, status, reply) {
+            if (status.success) {
+                isGitDirectory(reply, function(isGit) {
+                    if (isGit) {
+                        gitPath = current;
+                        done(gitPath);
+                    } else if (treeIndex !== null) {
+                        currentTab.pop();
+                        inspectPath(currentTab);
+                    } else if (treeIndex === null && gitPath === null) {
+                        done(false);
+                    }
+                });
+            }
+        });
+    }
+
+    function isGitDirectory(unifileResponse, done) {
+        var isGit = false;
+        if (unifileResponse.length) {
+            for (var unifileObject in unifileResponse) {
+                if (unifileResponse.hasOwnProperty(unifileObject) && unifileResponse[unifileObject].name && unifileResponse[unifileObject].name === ".git"  && !gitPath) {
+                    isGit = true;
+                }
+            }
+        }
+        done(isGit);
+    }
+}
