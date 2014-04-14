@@ -73,7 +73,7 @@ BackNode.prototype.git = {
         $.get("/deploy/scan", {"path": this.git.path}, function(response) {
             this.git.deployKey = JSON.parse(response).deployKey;
             if (!this.git.socket) {
-                this.git.socket = io.connect("http://" + window.location.hostname + ":8000");
+                this.git.socket = io.connect("http://" + window.location.hostname);
             }
             this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
         }.bind(this));

@@ -5,14 +5,15 @@ unigit = require('./server_module/unigit.js'),
 unigrab = require('./server_module/unigrab.js'),
 bodyParser = require('body-parser'),
 cookieParser = require('cookie-parser'),
-io = require('socket.io').listen(8000),
+io = require('socket.io'),
 cookieSession = require('cookie-session');
 
-var options = Unifile.defaultConfig;
-
-var pathFileInfo = {};
-
 var backnode = Express();
+var serverIo = http.createServer(backnode);
+var socketIo = io.listen(serverIo);
+
+var options = Unifile.defaultConfig;
+var pathFileInfo = {};
 
 //To use unifile as an api
 backnode.use('/deploy', bodyParser())
@@ -24,13 +25,11 @@ backnode.use('/deploy', bodyParser())
 
 //static
 .use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib/'))
-.use('/admin', Express.static(__dirname + '/../admin'))
 .use('/app', Express.static(__dirname + '/../app/'))
-.use('/', Express.static(__dirname + '/../public'))
-.use('/', Express.static(__dirname + '/../node_modules/socket.io/node_modules/socket.io-client/'))
-.use('/', Express.static(__dirname + '/../bower_components/bootstrap/'))
-.use('/', Express.static(__dirname + '/../bower_components/jquery/'))
-.use('/', Express.static(__dirname + '/../submodules/cloud-explorer/'))
+.use('/admin', Express.static(__dirname + '/../admin/'))
+.use('/', Express.static(__dirname + '/../app/'))
+.use('/', Express.static(__dirname + '/../public/'))
+.use('/', Express.static(__dirname + '/../submodules/'))
 
 .get('/deploy/:type', function(req, res) {
     switch (req.param('type')) {
@@ -47,8 +46,8 @@ backnode.use('/deploy', bodyParser())
             var deployKey = rd.toString().replace(".", "");
 
             unigit.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
-                unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, {io: io, key: deployKey}, function(pathInfos) {
-                    unigrab.ioEmit({io: io, key: deployKey}, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
+                unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, {io: socketIo, key: deployKey}, function(pathInfos) {
+                    unigrab.ioEmit({io: socketIo, key: deployKey}, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
                     pathFileInfo[deployKey] = pathInfos;
                 });
             });
@@ -60,16 +59,16 @@ backnode.use('/deploy', bodyParser())
         case 'git':
             // grab the .git folder on user remote directory (we don't need other files to deploy modification)
             // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
-            unigit.grabGit("dropbox", "tempFolder/" + req.param('deployKey'), req.param('path'), req, {io: io, key: req.param('deployKey')}, function(message) {
-                unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
+            unigit.grabGit("dropbox", "tempFolder/" + req.param('deployKey'), req.param('path'), req, {io: socketIo, key: req.param('deployKey')}, function(message) {
+                unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, message);
             });
             res.send();
         break;
 
         default :
             // grab a folder (not just .git)
-            unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: io, key: req.param('deployKey')}, function(message) {
-                unigrab.ioEmit({io: io, key: req.param('deployKey')}, message);
+            unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: socketIo, key: req.param('deployKey')}, function(message) {
+                unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, message);
             });
             res.send();
         break;
@@ -81,6 +80,6 @@ backnode.use('/deploy', bodyParser())
     res.send(404, 'Not Found');
 });
 
-backnode.listen(process.env.PORT || 8080);
+serverIo.listen(process.env.PORT || 8080);
 
 console.log('now listening on port ', (process.env.PORT || 8080));

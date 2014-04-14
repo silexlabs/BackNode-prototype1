@@ -1,5 +1,6 @@
 var fs = require('fs');
 var router = require('unifile/lib/core/router.js');
+var exec = require('child_process').exec;
 
 /*
  * @method scanPath scan the given remote path with unifile and return a pathInfos object (for unigrab.grabFolder)
@@ -130,6 +131,11 @@ exports.grabFolder = function(service, localPath, pathInfos, req, socketIoConfig
             if (status.success) {
                 pathInfos.success++;
                 pathInfos.fileList[filePath].success = true;
+
+                if (filePath.indexOf(".gitmodules") !== -1 && text_content.success) {
+                    text_content = "";
+                }
+
                 fs.writeFile(localPath + "/" + filePath, text_content);
 
                 exports.ioEmit(socketIoConfig, "download status: " + pathInfos.success + "/" + pathInfos.start + " (" + exports.estimateTime(pathInfos.fileCount) + " left)");
@@ -144,8 +150,19 @@ exports.grabFolder = function(service, localPath, pathInfos, req, socketIoConfig
 
             if (pathInfos.success === pathInfos.fileCount) {
                 var timeElapsed = (Date.now() - pathInfos.timeStart) / 1000;
-                exports.ioEmit(socketIoConfig, "download finished on: " + timeElapsed + "s");
-                done("download finished on: " + timeElapsed + "s");
+                //exports.ioEmit(socketIoConfig, "download finished on: " + timeElapsed + "s");
+                //done("download finished on: " + timeElapsed + "s");
+                exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git add .", function(error, stdout, stderr) {
+                    exports.ioEmit(socketIoConfig, stdout + stderr + error);
+
+                    exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git commit -m 'BackNode deploy v1'", function(error, stdout, stderr) {
+                        exports.ioEmit(socketIoConfig, "COMMIT " + stdout + stderr + error);
+
+                        exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git remote set-url origin https://RonanDrouglazet@github.com/RonanDrouglazet/ShakeMyCss.git && git push", function(error, stdout, stderr) {
+                            exports.ioEmit(socketIoConfig, "PUSH " + stdout + stderr + error);
+                        });
+                    });
+                });
             }
         });
     }
@@ -201,7 +218,7 @@ exports.createLocalPath = function(localPath, current, done) {
  */
 
 exports.ioEmit = function(socketIoConfig, message) {
-    if (socketIoConfig && socketIoConfig.io && socketIoConfig.key) {
+    if (socketIoConfig && socketIoConfig.io && socketIoConfig.key && socketIoConfig.io.sockets) {
         socketIoConfig.io.sockets.emit(socketIoConfig.key, {code: message});
     }
 }
