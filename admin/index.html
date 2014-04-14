@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="./css/normalize.css">
     <link rel="stylesheet" href="./css/font-awesome.min.css">
     <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="../submodules/cloud-explorer/lib/app/css/style.css">
+    <link rel="stylesheet" href="/lib/app/css/style.css"> <!-- cloud explorer -->
     <link rel="icon" type="image/ico" href="./img/favicon.ico">
-    <link href="/bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -28,8 +28,8 @@
           <div class="modal-body">
                 <div id="chooseFiles"></div>
                 <div id="deployOnGoing">
-                    <p>If it's too long (> 10 000 files), your project are maybe to big to grab all the informations, so you can deploy just the last saved files to (since you have opened BackNode)</p>
-                    <p>Otherwise, please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
+                    <p>Please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
+                    <p>Otherwise, if it's too long (> 10 000 files), your project are maybe to big to grab all the informations, so you can deploy just the last saved files to (since you have opened BackNode)</p>
                     <div class="progress progress-striped active">
                       <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                         <span></span>
@@ -100,13 +100,13 @@
 
 
     <!-- be careful about script order :) -->
-    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/dist/jquery.min.js"></script>
     <script src="./js/script.min.js" type="text/javascript"></script>
-    <script src="/node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.min.js" onload="loadProgress()"></script>
-    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js" onload="loadProgress()"></script>
+    <script src="/dist/socket.io.min.js" onload="loadProgress()"></script>
+    <script src="/dist/js/bootstrap.min.js" onload="loadProgress()"></script>
     <script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()" type="text/javascript"></script>
     <script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()" type="text/javascript"></script>
-    <script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js" onload="loadProgress()"  type="text/javascript"></script>
-    <script src="../app/backnode.min.js" onload="loadProgress()"  type="text/javascript"></script>
+    <script src="/lib/app/js/cloud-explorer.js" onload="loadProgress()"  type="text/javascript"></script>
+    <script src="/app/backnode.min.js" onload="loadProgress()"  type="text/javascript"></script>
 </body>
 </html>

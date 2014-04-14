@@ -9,16 +9,6 @@ io = require('socket.io').listen(8000),
 cookieSession = require('cookie-session');
 
 var options = Unifile.defaultConfig;
-options.staticFolders.push(
-    {
-        name: '/cloud-explorer',
-        path: '../../../../submodules/cloud-explorer/lib/app/'
-    },
-    {
-        name: '/cetest',
-        path: '../../../../submodules/cloud-explorer/lib/app/'
-    }
-);
 
 var pathFileInfo = {};
 
@@ -33,13 +23,14 @@ backnode.use('/deploy', bodyParser())
 .use(Unifile.middleware(Express, backnode, options))
 
 //static
-.use('/submodules', Express.static(__dirname + '/../submodules'))
-.use('/node_modules', Express.static(__dirname + '/../node_modules'))
-.use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib'))
-.use('/app', Express.static(__dirname + '/../app'))
+.use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib/'))
 .use('/admin', Express.static(__dirname + '/../admin'))
-.use('/bower_components', Express.static(__dirname + '/../bower_components'))
+.use('/app', Express.static(__dirname + '/../app/'))
 .use('/', Express.static(__dirname + '/../public'))
+.use('/', Express.static(__dirname + '/../node_modules/socket.io/node_modules/socket.io-client/'))
+.use('/', Express.static(__dirname + '/../bower_components/bootstrap/'))
+.use('/', Express.static(__dirname + '/../bower_components/jquery/'))
+.use('/', Express.static(__dirname + '/../submodules/cloud-explorer/'))
 
 .get('/deploy/:type', function(req, res) {
     if (req.param('type') === 'scan') {
