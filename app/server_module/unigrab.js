@@ -150,19 +150,8 @@ exports.grabFolder = function(service, localPath, pathInfos, req, socketIoConfig
 
             if (pathInfos.success === pathInfos.fileCount) {
                 var timeElapsed = (Date.now() - pathInfos.timeStart) / 1000;
-                //exports.ioEmit(socketIoConfig, "download finished on: " + timeElapsed + "s");
-                //done("download finished on: " + timeElapsed + "s");
-                exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git add .", function(error, stdout, stderr) {
-                    exports.ioEmit(socketIoConfig, stdout + stderr + error);
-
-                    exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git commit -m 'BackNode deploy v1'", function(error, stdout, stderr) {
-                        exports.ioEmit(socketIoConfig, "COMMIT " + stdout + stderr + error);
-
-                        exec("cd " + localPath + "/" + filePath.split("/")[0] + " && git remote set-url origin https://RonanDrouglazet@github.com/RonanDrouglazet/ShakeMyCss.git && git push", function(error, stdout, stderr) {
-                            exports.ioEmit(socketIoConfig, "PUSH " + stdout + stderr + error);
-                        });
-                    });
-                });
+                exports.ioEmit(socketIoConfig, "download finished on: " + timeElapsed + "s");
+                done("download finished on: " + timeElapsed + "s");
             }
         });
     }

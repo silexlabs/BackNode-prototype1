@@ -1,5 +1,10 @@
-var router = require('unifile/lib/core/router.js');
-var unigrab = require('./unigrab.js');
+var router = require('unifile/lib/core/router.js'),
+unigrab = require('./unigrab.js'),
+https = require('https'),
+cp = require('child_process'),
+querystring = require('querystring');
+
+var git_access_token;
 
 //grab the .git folder on the remotePath given
 exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
@@ -66,5 +71,156 @@ exports.find = function(service, remotePath, req, done) {
             }
         }
         done(isGit);
+    }
+}
+
+exports.oauth = function(req, res) {
+    if (req.param('code')) {
+        var access_token, dataObject, options = {
+          hostname: 'github.com',
+          port: 443,
+          path: '/login/oauth/access_token',
+          method: 'POST'
+        };
+
+        var gitResponse = https.request(options, function(resG) {
+            resG.on('data', function (chunk) {
+                dataObject = querystring.parse(chunk.toString());
+                if (dataObject.access_token) {
+                    access_token = dataObject.access_token;
+                    res.cookie('git_access_token', access_token, {signed: true});
+                    res.send();
+                }
+            });
+        });
+
+        gitResponse.on('error', function(error) {
+            console.log(error);
+        });
+
+        gitResponse.write('client_id=79b7bd5afe5787355123&client_secret=4d52c270bb7e45f228328169d281e42c282d4756&code=' + req.param('code'));
+        gitResponse.end();
+    } else {
+        var returnValue = false;
+
+        if (req.signedCookies.git_access_token) {
+            returnValue = git_access_token = req.signedCookies.git_access_token;
+        }
+
+        res.write(JSON.stringify({access_token: returnValue}));
+        res.send();
+    }
+}
+
+exports.deployOnGHPages = function(localPath, socketIoConfig) {
+    if (git_access_token) {
+        exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
+            if (isOnMaster) {
+                console.log("### isOnMaster");
+                exports.commitWithDate(localPath, function(commitIsDone, stdout) {
+                    unigrab.ioEmit(socketIoConfig, stdout);
+
+                    if (commitIsDone) {
+                        console.log("### commitIsDone");
+                        exports.pushToMasterAndGHPages(localPath, function(deployDone, stdout) {
+                            unigrab.ioEmit(socketIoConfig, stdout);
+
+                            if (deployDone) {
+                                unigrab.ioEmit(socketIoConfig, "deploy finished");
+                            } else {
+                                unigrab.ioEmit(socketIoConfig, "deploy error");
+                            }
+                        });
+                    } else {
+                        console.log("### " + stdout);
+                    }
+                });
+
+            } else {
+                unigrab.ioEmit(socketIoConfig, "your git folder are not on master branch");
+            }
+        });
+    } else {
+        unigrab.ioEmit(socketIoConfig, "git not logged in");
+    }
+}
+
+exports.checkIfBranchIsMaster = function(localPath, done) {
+    cp.exec("cd " + localPath + " && git status", function(error, stdout, stderr) {
+        if (stdout.indexOf("On branch master") === 0) {
+            done(true, stdout);
+        } else {
+            done(false, stdout);
+        }
+    });
+}
+
+exports.commitWithDate = function(localPath, done) {
+    cp.exec("cd " + localPath + " && git stash && git pull --rebase && git stash pop && git add . --all", function(error, stdout, stderr) {
+        if (!error) {
+            cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout2, stderr) {
+                if (!error) {
+                    done(true, stdout + stdout2);
+                } else {
+                    done(false, "no changes to deploy");
+                }
+            });
+        } else {
+            done(false, error);
+        }
+    });
+}
+
+exports.pushToMasterAndGHPages = function(localPath, done) {
+    cp.exec("cd " + localPath + " && git pull --rebase && git push", function(error, stdout, stderr) {
+        if (!error) {
+            switchToGHPagesBranche(function(switchDone, stdout2) {
+                if (switchDone) {
+                    resetAndPush(function(pushDone, stdout3) {
+                        if (pushDone) {
+                            done(true, stdout + stdout2 + stdout3);
+                        } else {
+                            done(false, stdout + stdout2 + stdout3);
+                        }
+                    });
+                } else {
+                    done(false, stdout + stdout2);
+                }
+            });
+        } else {
+            done(false, stdout);
+        }
+    });
+
+    function switchToGHPagesBranche(switchDone) {
+        cp.exec("cd " + localPath + " && git checkout -b gh-pages", function(error, stdout, stderr) {
+            if (error) {
+                cp.exec("cd " + localPath + " && git checkout gh-pages", function(error, stdout2, stderr) {
+                    if (!error) {
+                        switchDone(true, stdout + stdout2);
+                    } else {
+                        switchDone(false, error);
+                    }
+                });
+            } else {
+                switchDone(true, error);
+            }
+        });
+    }
+
+    function resetAndPush(pushDone) {
+        cp.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
+            if (!error) {
+                cp.exec("cd " + localPath + " && git push -uf origin gh-pages", function(error, stdout2, stderr) {
+                    if (!error) {
+                        pushDone(true, stdout + stdout2);
+                    } else {
+                        pushDone(false, error);
+                    }
+                });
+            } else {
+                pushDone(false, error)
+            }
+        });
     }
 }

@@ -64,6 +64,7 @@ BackNode.prototype.git = {
     },
     showDeployWindow: function() {
         $('.modal-body #chooseFiles').hide();
+        $('#deployOnGoing textarea').hide().html("");
         $('.modal-body #deployOnGoing').show();
         $('#deployModalButton').show();
         $('.modal-body #deployOnGoing p').show();
@@ -78,7 +79,10 @@ BackNode.prototype.git = {
             this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
         }.bind(this));
 
+        this.git.getToken.bind(this)();
+
         $('.modal').modal('show');
+        this.git.state = "homeDeploy";
     },
     showDeploySaved: function() {
         if ($('.modal-body #chooseFiles').html() !== "") {
@@ -108,11 +112,18 @@ BackNode.prototype.git = {
         }
     },
     deploy: function() {
-        $('#deployModalButton').addClass('disabled');
-        $('#deployGitModalButton').addClass('disabled');
-        $('.modal-body #deployOnGoing p').hide();
-
-        $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey});
+        if (this.git.access_token === "pending") {
+            this.git.getToken.bind(this)(this.git.deploy.bind(this));
+        } else if (this.git.access_token) {
+            $('#deployModalButton').addClass('disabled');
+            $('#deployGitModalButton').addClass('disabled');
+            $('.modal-body #deployOnGoing p').hide();
+            $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey});
+            this.git.state = "deployStarted";
+        } else {
+            window.open("https://github.com/login/oauth/authorize?redirect_uri=http://localhost:8080/gitOauth/&scope=repo&client_id=79b7bd5afe5787355123&state=" + Date.now(),"_blank","width=1150,height=750");
+            this.git.access_token = "pending";
+        }
     },
     deployJustGit: function() {
         var fileToDeploy = [];
@@ -128,20 +139,40 @@ BackNode.prototype.git = {
         $('#deployModalButton').addClass('disabled');
         $('#deployGitModalButton').addClass('disabled');
 
-        //TODO must be finished
+        //TODO must be finished (grab the saved file too)
         $.get("/deploy/git", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
     },
     getDeployStatus: function(data) {
-        $('#deployOnGoing .progress span').html(data.code);
+
+        if (this.git.state === "downloadFinish") {
+            $('#deployOnGoing textarea').show();
+            $('#deployOnGoing textarea').append("\n");
+            $('#deployOnGoing textarea').append(data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+        } else {
+            $('#deployOnGoing .progress span').html(data.code);
+        }
 
         if (data.code.indexOf("total files") === 0) {
-           $('#deployModalButton').removeClass('disabled');
-           $('#deployModalButton').html("Deploy folder (" + data.code.split("estimate duration: ")[1] + ")");
+            this.git.state = "scanFinish";
+            $('#deployModalButton').removeClass('disabled');
+            $('#deployModalButton').html("Deploy folder (" + data.code.split("estimate duration: ")[1] + ")");
         }
         if (data.code.indexOf("download finished") === 0) {
+            this.git.state = "downloadFinish";
             //this.git.socket.disconnect();
             //this.git.socket = null;
         }
+    },
+    getToken: function(callback) {
+        $.get("/gitOauth", null, function(response) {
+            var d = JSON.parse(response);
+            if (d.access_token) {
+                this.git.access_token = d.access_token;
+            }
+            if (callback) {
+                callback(d.access_token);
+            }
+        }.bind(this));
     }
 };
 

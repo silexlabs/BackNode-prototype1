@@ -1,5 +1,5 @@
-var Express = require('express'),
-Unifile = require('unifile'),
+var express = require('express'),
+unifile = require('unifile'),
 http = require('http'),
 unigit = require('./server_module/unigit.js'),
 unigrab = require('./server_module/unigrab.js'),
@@ -8,11 +8,11 @@ cookieParser = require('cookie-parser'),
 io = require('socket.io'),
 cookieSession = require('cookie-session');
 
-var backnode = Express();
+var backnode = express();
 var serverIo = http.createServer(backnode);
 var socketIo = io.listen(serverIo);
 
-var options = Unifile.defaultConfig;
+var options = unifile.defaultConfig;
 var pathFileInfo = {};
 
 //To use unifile as an api
@@ -20,17 +20,21 @@ backnode.use('/deploy', bodyParser())
 .use('/deploy', cookieParser())
 .use('/deploy', cookieSession({ secret: 'plum plum plum'}))
 
-//Unifile
-.use(Unifile.middleware(Express, backnode, options))
+//unifile
+.use(unifile.middleware(express, backnode, options))
 
 //static
-.use('/cloud-explorer', Express.static(__dirname + '/../submodules/cloud-explorer/lib/'))
-.use('/app', Express.static(__dirname + '/../app/'))
-.use('/admin', Express.static(__dirname + '/../admin/'))
-.use('/', Express.static(__dirname + '/../app/'))
-.use('/', Express.static(__dirname + '/../public/'))
-.use('/', Express.static(__dirname + '/../submodules/'))
+.use('/cloud-explorer', express.static(__dirname + '/../submodules/cloud-explorer/lib/'))
+.use('/app', express.static(__dirname + '/../app/'))
+.use('/admin', express.static(__dirname + '/../admin/'))
+.use('/', express.static(__dirname + '/../app/'))
+.use('/', express.static(__dirname + '/../public/'))
+.use('/', express.static(__dirname + '/../submodules/'))
 
+//deploy plugin
+.use('/gitOauth', cookieParser('backNodeGit'))
+.use('/gitOauth', cookieSession({ secret: 'backNodeGit'}))
+.get('/gitOauth', unigit.oauth)
 .get('/deploy/:type', function(req, res) {
     switch (req.param('type')) {
 
@@ -68,13 +72,14 @@ backnode.use('/deploy', bodyParser())
         default :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: socketIo, key: req.param('deployKey')}, function(message) {
-                unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, message);
+                unigit.deployOnGHPages("tempFolder/" + req.param('deployKey') + "/" + req.param('path'), {io: socketIo, key: req.param('deployKey')});
             });
             res.send();
         break;
     }
 })
 
+//404 not found
 .use(function(req, res, next) {
     res.setHeader('Content-Type', 'text/plain');
     res.send(404, 'Not Found');
