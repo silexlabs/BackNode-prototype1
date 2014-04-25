@@ -272,10 +272,12 @@ BackNode.prototype.editor = {
         var l = nodeArray.length;
 
         for (var node = 0; node < l; node++) {
-            var content = nodeArray[0].src || nodeArray[0].href || nodeArray[0].innerHTML;
-            for (var index in tabToRemove) {
-                if (tabToRemove.hasOwnProperty(index) && content.indexOf(tabToRemove[index]) !== -1) {
-                    nodeArray[0].parentNode.removeChild(nodeArray[0]);
+            if (nodeArray[node]) {
+                var content = nodeArray[node].src || nodeArray[node].href || nodeArray[node].innerHTML;
+                for (var index in tabToRemove) {
+                    if (tabToRemove.hasOwnProperty(index) && content.indexOf(tabToRemove[index]) !== -1) {
+                        nodeArray[node].parentNode.removeChild(nodeArray[node]);
+                    }
                 }
             }
         }

@@ -10,7 +10,7 @@ exports.scanPath = function(service, localPath, remotePath, ignorePath, req, soc
     exports.ioEmit(socketIoConfig, "scan your " + service + " path");
 
     var pathInfos = {start: 0, success: 0, error: 0, fileCount: 0, fileList: {}, timeStart: 0};
-    var timeoutGrab = 5000;
+    var timeoutGrab = 8000;
 
     exports.createLocalPath(localPath, 0, function(success) {
         if (success) {
@@ -107,7 +107,7 @@ exports.grabFolder = function(service, localPath, pathInfos, req, socketIoConfig
         console.log("*************************************************************");
         console.log("START TO GRAB " + pathInfos.fileCount + " FILE");
         console.log("*************************************************************");
-        console.log("ESTIMATE TIME: " + exports.estimateTime(pathInfos.fileCount));
+        console.log("ESTIMATE TIME: " + exports.estimateTime(pathInfos.fileCount - pathInfos.success));
         console.log("*************************************************************");
         console.log("\n");
         pathInfos.timeStart = Date.now();
@@ -138,14 +138,14 @@ exports.grabFolder = function(service, localPath, pathInfos, req, socketIoConfig
 
                 fs.writeFile(localPath + "/" + filePath, text_content);
 
-                exports.ioEmit(socketIoConfig, "download status: " + pathInfos.success + "/" + pathInfos.start + " (" + exports.estimateTime(pathInfos.fileCount) + " left)");
+                exports.ioEmit(socketIoConfig, "download status: " + pathInfos.success + "/" + pathInfos.start + " (" + exports.estimateTime(pathInfos.fileCount - pathInfos.success) + " left)");
             } else {
                 pathInfos.error++;
                 pathInfos.fileList[filePath].error = true;
                 grabFile(pathInfos.fileList[filePath].url);
 
                 exports.ioEmit(socketIoConfig, "dropbox api request limit, need to wait a little -- " +
-                    "download status: " + pathInfos.success + "/" + pathInfos.start + " (" + exports.estimateTime(pathInfos.fileCount) + " left)");
+                    "download status: " + pathInfos.success + "/" + pathInfos.start + " (" + exports.estimateTime(pathInfos.fileCount - pathInfos.success) + " left)");
             }
 
             if (pathInfos.success === pathInfos.fileCount) {

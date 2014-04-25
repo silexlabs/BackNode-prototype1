@@ -33,6 +33,7 @@ exports.scanGitIgnore = function(service, remotePath, req, done) {
     });
 }
 
+//search for a .git directory on the remote path given and his parent
 exports.find = function(service, remotePath, req, done) {
     var gitPath = null;
 
@@ -74,6 +75,7 @@ exports.find = function(service, remotePath, req, done) {
     }
 }
 
+//get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
 exports.oauth = function(req, res) {
     if (req.param('code')) {
         var access_token, dataObject, options = {
@@ -112,6 +114,7 @@ exports.oauth = function(req, res) {
     }
 }
 
+//deploy remote git folder's modifications on github branch master and gh-pages
 exports.deployOnGHPages = function(localPath, socketIoConfig) {
     if (git_access_token) {
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
@@ -145,6 +148,7 @@ exports.deployOnGHPages = function(localPath, socketIoConfig) {
     }
 }
 
+//check if the local folder are on branch master
 exports.checkIfBranchIsMaster = function(localPath, done) {
     cp.exec("cd " + localPath + " && git status", function(error, stdout, stderr) {
         if (stdout.indexOf("On branch master") === 0) {
@@ -155,22 +159,32 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
     });
 }
 
+//create the commit
 exports.commitWithDate = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git stash && git pull --rebase && git stash pop && git add . --all", function(error, stdout, stderr) {
-        if (!error) {
-            cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout2, stderr) {
-                if (!error) {
-                    done(true, stdout + stdout2);
-                } else {
-                    done(false, "no changes to deploy");
-                }
-            });
-        } else {
-            done(false, error);
+    cp.exec("cd " + localPath + " && git stash", function(error, stdout, stderr) {
+        var popString = "&& git stash pop";
+
+        if (stdout.toString().indexOf("No local changes to save") === 0) {
+            popString = "";
         }
+
+        cp.exec("cd " + localPath + " && git pull --rebase " + popString + " && git add . --all", function(error, stdout, stderr) {
+            if (!error) {
+                cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout2, stderr) {
+                    if (!error) {
+                        done(true, stdout + stdout2);
+                    } else {
+                        done(false, "no changes to deploy");
+                    }
+                });
+            } else {
+                done(false, stdout);
+            }
+        });
     });
 }
 
+//push the commit and reset gh-pages with master
 exports.pushToMasterAndGHPages = function(localPath, done) {
     cp.exec("cd " + localPath + " && git pull --rebase && git push", function(error, stdout, stderr) {
         if (!error) {
@@ -211,7 +225,7 @@ exports.pushToMasterAndGHPages = function(localPath, done) {
     function resetAndPush(pushDone) {
         cp.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                cp.exec("cd " + localPath + " && git push -uf origin gh-pages", function(error, stdout2, stderr) {
+                cp.exec("cd " + localPath + " && git push -uf origin gh-pages && git checkout master", function(error, stdout2, stderr) {
                     if (!error) {
                         pushDone(true, stdout + stdout2);
                     } else {
