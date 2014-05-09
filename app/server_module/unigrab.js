@@ -1,6 +1,5 @@
 var fs = require('fs');
 var router = require('unifile/lib/core/router.js');
-var exec = require('child_process').exec;
 
 /*
  * @method scanPath scan the given remote path with unifile and return a pathInfos object (for unigrab.grabFolder)

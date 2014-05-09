@@ -3,6 +3,7 @@ unifile = require('unifile'),
 http = require('http'),
 unigit = require('./server_module/unigit.js'),
 unigrab = require('./server_module/unigrab.js'),
+uniput = require('./server_module/uniput.js'),
 bodyParser = require('body-parser'),
 cookieParser = require('cookie-parser'),
 io = require('socket.io'),
@@ -72,7 +73,20 @@ backnode.use('/deploy', bodyParser())
         default :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: socketIo, key: req.param('deployKey')}, function(message) {
-                unigit.deployOnGHPages("tempFolder/" + req.param('deployKey') + "/" + req.param('path'), {io: socketIo, key: req.param('deployKey')});
+                unigit.deployOnGHPages("tempFolder/" + req.param('deployKey') + "/" + req.param('path'), {io: socketIo, key: req.param('deployKey')}, function(done) {
+                    if (done) {
+                        var gitFolder = req.param('path') + "/.git";
+                        unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, "update git project status on your dropbox folder...");
+                        // when deploy is finish on gitHub, we must update the .git folder on dropbox, because we do the commit on backnode local machine, so the dropbox project don't know about commit
+                        uniput.putFolder("dropbox", "tempFolder/" + req.param('deployKey'), gitFolder, req, function(error) {
+                            if (!error) {
+                                unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, "git updated, deploy ok");
+                            } else {
+                                unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, "git not updated, deploy error");
+                            }
+                        });
+                    }
+                });
             });
             res.send();
         break;

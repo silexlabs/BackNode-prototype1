@@ -115,7 +115,7 @@ exports.oauth = function(req, res) {
 }
 
 //deploy remote git folder's modifications on github branch master and gh-pages
-exports.deployOnGHPages = function(localPath, socketIoConfig) {
+exports.deployOnGHPages = function(localPath, socketIoConfig, done) {
     if (git_access_token) {
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
             if (isOnMaster) {
@@ -127,11 +127,11 @@ exports.deployOnGHPages = function(localPath, socketIoConfig) {
                         console.log("### commitIsDone");
                         exports.pushToMasterAndGHPages(localPath, function(deployDone, stdout) {
                             unigrab.ioEmit(socketIoConfig, stdout);
-
                             if (deployDone) {
-                                unigrab.ioEmit(socketIoConfig, "deploy finished");
+                                done(true);
                             } else {
                                 unigrab.ioEmit(socketIoConfig, "deploy error");
+                                done(false);
                             }
                         });
                     } else {
@@ -161,32 +161,24 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
 
 //create the commit
 exports.commitWithDate = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git stash", function(error, stdout, stderr) {
-        var popString = "&& git stash pop";
-
-        if (stdout.toString().indexOf("No local changes to save") === 0) {
-            popString = "";
+    cp.exec("cd " + localPath + " && git add . --all", function(error, stdout, stderr) {
+        if (!error) {
+            cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
+                if (!error) {
+                    done(true, stdout);
+                } else {
+                    done(false, stdout);
+                }
+            });
+        } else {
+            done(false, "no changes to deploy");
         }
-
-        cp.exec("cd " + localPath + " && git pull --rebase " + popString + " && git add . --all", function(error, stdout, stderr) {
-            if (!error) {
-                cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout2, stderr) {
-                    if (!error) {
-                        done(true, stdout + stdout2);
-                    } else {
-                        done(false, "no changes to deploy");
-                    }
-                });
-            } else {
-                done(false, stdout);
-            }
-        });
     });
 }
 
 //push the commit and reset gh-pages with master
 exports.pushToMasterAndGHPages = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git pull --rebase && git push", function(error, stdout, stderr) {
+    cp.exec("cd " + localPath + " && git push", function(error, stdout, stderr) {
         if (!error) {
             switchToGHPagesBranche(function(switchDone, stdout2) {
                 if (switchDone) {

@@ -148,6 +148,12 @@ BackNode.prototype.git = {
             $('#deployOnGoing textarea').show();
             $('#deployOnGoing textarea').append("\n");
             $('#deployOnGoing textarea').append(data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+
+            if (data.code === "update git project status on your dropbox folder...") {
+                $('#deployOnGoing .progress span').html(data.code);
+                $('#deployOnGoing textarea').hide();
+                this.git.state = data.code;
+            }
         } else {
             $('#deployOnGoing .progress span').html(data.code);
         }
@@ -159,6 +165,7 @@ BackNode.prototype.git = {
         }
         if (data.code.indexOf("download finished") === 0) {
             this.git.state = "downloadFinish";
+            $('#deployOnGoing .progress span').html("deploy on going, please wait...");
             //this.git.socket.disconnect();
             //this.git.socket = null;
         }
@@ -264,15 +271,18 @@ BackNode.prototype.editor = {
         this.cleanRessource(iframeDocument, "script", ["app/ckeditor/config.js", "app/ckeditor/lang/", "app/ckeditor/styles.js", "app/ckeditor/ckeditor.js"]);
         this.cleanRessource(iframeDocument, "link", ["app/ckeditor/skins/moono/editor.css"]);
         this.cleanRessource(iframeDocument, "style", [".cke{visibility:hidden;}"]);
+        iframeDocument.getElementsByTagName('html')[0].className = iframeDocument.getElementsByTagName('html')[0].className.replace(" js canvas canvastext no-touch rgba backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations cssgradients csstransforms csstransforms3d csstransitions fontface", "");
     },
 
     //utils to help cleaning different kind of node
     cleanRessource: function(iframeDocument, type, tabToRemove) {
-        var nodeArray = iframeDocument.getElementsByTagName(type);
+        var nodeArray = [];
+        for (var i in iframeDocument.getElementsByTagName(type)) {
+            nodeArray.push(iframeDocument.getElementsByTagName(type)[i]);
+        }
         var l = nodeArray.length;
-
-        for (var node = 0; node < l; node++) {
-            if (nodeArray[node]) {
+        for (var node = 0; node <= l; node++) {
+            if (nodeArray[node] && nodeArray[node].tagName) {
                 var content = nodeArray[node].src || nodeArray[node].href || nodeArray[node].innerHTML;
                 for (var index in tabToRemove) {
                     if (tabToRemove.hasOwnProperty(index) && content.indexOf(tabToRemove[index]) !== -1) {
