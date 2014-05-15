@@ -115,7 +115,7 @@ exports.oauth = function(req, res) {
 }
 
 //deploy remote git folder's modifications on github branch master and gh-pages
-exports.deployOnGHPages = function(localPath, socketIoConfig, done) {
+exports.deployOnGHPages = function(localPath, req, socketIoConfig, done) {
     if (git_access_token) {
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
             if (isOnMaster) {
@@ -125,7 +125,7 @@ exports.deployOnGHPages = function(localPath, socketIoConfig, done) {
 
                     if (commitIsDone) {
                         console.log("### commitIsDone");
-                        exports.pushToMasterAndGHPages(localPath, function(deployDone, stdout) {
+                        exports.pushToMasterAndGHPages(localPath, req, function(deployDone, stdout) {
                             unigrab.ioEmit(socketIoConfig, stdout);
                             if (deployDone) {
                                 done(true);
@@ -176,27 +176,42 @@ exports.commitWithDate = function(localPath, done) {
     });
 }
 
+//return the remote url (like origin or heroku)
+exports.getRemoteUrl = function(remote, localPath, done) {
+    cp.exec("cd " + localPath + " && git config --local --get remote." + remote + ".url", done);
+}
+
 //push the commit and reset gh-pages with master
-exports.pushToMasterAndGHPages = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git push", function(error, stdout, stderr) {
+exports.pushToMasterAndGHPages = function(localPath, req, done) {
+    var gitRemoteUrl;
+
+    exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
         if (!error) {
-            switchToGHPagesBranche(function(switchDone, stdout2) {
-                if (switchDone) {
-                    resetAndPush(function(pushDone, stdout3) {
-                        if (pushDone) {
-                            done(true, stdout + stdout2 + stdout3);
+            gitRemoteUrl = stdout.replace("https://", "https://" + git_access_token + "@");
+            console.log(gitRemoteUrl);
+            cp.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout, stderr) {
+                if (!error) {
+                    switchToGHPagesBranche(function(switchDone, stdout2) {
+                        if (switchDone) {
+                            resetAndPush(function(pushDone, stdout3) {
+                                if (pushDone) {
+                                    done(true, stdout + stdout2 + stdout3);
+                                } else {
+                                    done(false, stdout + stdout2 + stdout3);
+                                }
+                            });
                         } else {
-                            done(false, stdout + stdout2 + stdout3);
+                            done(false, stdout + stdout2);
                         }
                     });
                 } else {
-                    done(false, stdout + stdout2);
+                    done(false, stdout);
                 }
             });
         } else {
             done(false, stdout);
         }
-    });
+    })
 
     function switchToGHPagesBranche(switchDone) {
         cp.exec("cd " + localPath + " && git checkout -b gh-pages", function(error, stdout, stderr) {
@@ -217,9 +232,11 @@ exports.pushToMasterAndGHPages = function(localPath, done) {
     function resetAndPush(pushDone) {
         cp.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                cp.exec("cd " + localPath + " && git push -uf origin gh-pages && git checkout master", function(error, stdout2, stderr) {
+                cp.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout2, stderr) {
                     if (!error) {
-                        pushDone(true, stdout + stdout2);
+                        cp.exec("cd " + localPath + " && git checkout master", function(error, stdout3, stderr) {
+                            pushDone(true, stdout + stdout2);
+                        });
                     } else {
                         pushDone(false, error);
                     }

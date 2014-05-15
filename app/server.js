@@ -73,7 +73,7 @@ backnode.use('/deploy', bodyParser())
         default :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", "tempFolder/" + req.param('deployKey'), pathFileInfo[req.param('deployKey')], req, {io: socketIo, key: req.param('deployKey')}, function(message) {
-                unigit.deployOnGHPages("tempFolder/" + req.param('deployKey') + "/" + req.param('path'), {io: socketIo, key: req.param('deployKey')}, function(done) {
+                unigit.deployOnGHPages("tempFolder/" + req.param('deployKey') + "/" + req.param('path'), req, {io: socketIo, key: req.param('deployKey')}, function(done) {
                     if (done) {
                         var gitFolder = req.param('path') + "/.git";
                         unigrab.ioEmit({io: socketIo, key: req.param('deployKey')}, "update git project status on your dropbox folder...");
