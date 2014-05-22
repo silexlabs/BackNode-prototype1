@@ -23,19 +23,27 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">Please wait, we scan your remote folder</h4>
+            <h2 class="modal-title"><i class="fa fa-github fa-2x"></i> GitHub Pages</h2>
           </div>
           <div class="modal-body">
                 <div id="chooseFiles"></div>
                 <div id="deployOnGoing">
+                    <p>
+                        What are GitHub Pages?<br/><br/>
+                        GitHub Pages are public webpages freely hosted and easily published through our site. You can create and publish them online using the Automatic Page Generator (BackNode help you with this part). If you prefer to work locally, you can use the GitHub for Mac and Windows apps, or the command line.<br/><br/>
+
+                        Pages are served over HTTP, not HTTPS. That doesn't make them inherently less secure, but it does mean that you shouldn't use them for sensitive transactions, like sending passwords or credit card numbers.
+                    </p>
+                    <p>---------------------------------------------------------------------------------------------------</p>
                     <p>Please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
-                    <p>Otherwise, if it's too long (> 10 000 files), your project are maybe to big to grab all the informations, so you can deploy just the last saved files to (since you have opened BackNode)</p>
+                    <p>Otherwise, if it's too long (> 2/3mn), your project are maybe to big to grab all the informations</p>
                     <div class="progress progress-striped active">
                       <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                         <span></span>
                       </div>
                     </div>
                     <textarea rows="10" cols="89"></textarea>
+                    <center></center>
                 </div>
           </div>
           <div class="modal-footer">

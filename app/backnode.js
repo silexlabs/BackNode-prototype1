@@ -70,6 +70,7 @@ BackNode.prototype.git = {
         $('.modal-body #deployOnGoing p').show();
         $('#deployGitModalButton').removeClass('disabled');
         $('#deployModalButton').addClass('disabled');
+        $('#deployOnGoing center').hide();
 
         $.get("/deploy/scan", {"path": this.git.path}, function(response) {
             this.git.deployKey = JSON.parse(response).deployKey;
@@ -154,21 +155,34 @@ BackNode.prototype.git = {
                 $('#deployOnGoing textarea').hide();
                 this.git.state = data.code;
             }
+        } else if (data.code.indexOf("http://") === 0) {
+            $('#deployOnGoing center').show();
+            $('#deployOnGoing center').html("<a href='" + data.code + "' target='_blank'>" + data.code + "</a>");
+            $('#deployOnGoing .progress span').append("   <i class='fa fa-check-square-o'></i>");
+        } else if (data.code.indexOf("files found:") === 0) {
+            if (data.code.indexOf("files found: 1") === 0) {
+                $('#deployOnGoing .progress span').html("scanning your folder <i class='fa fa-refresh fa-spin'></i>");
+            }
+        } else if (data.code.indexOf("total files") === 0) {
+            this.git.state = "scanFinish";
+            $('#deployModalButton').removeClass('disabled');
+            $('#deployModalButton').html("Deploy folder <i class='fa fa-cog fa-spin'></i>");
+            $('#deployOnGoing .progress span').html("scan finished <i class='fa fa-check-square-o'></i>");
+            $('#deployOnGoing .progress').get(0).className = "progress";
+        } else if (data.code.indexOf("download status:") === 0) {
+            var tabDl = data.code.replace("download status: ", "").split("/");
+            var toWidth = Math.ceil(((parseInt(tabDl[0]) * 100) / parseInt(tabDl[1]))) + "%";
+            $('#deployOnGoing .progress-bar').css("width",  toWidth);
+            $('#deployOnGoing .progress span').html(toWidth);
+        } else if (data.code.indexOf("download finished") === 0) {
+            this.git.state = "downloadFinish";
+            $('#deployOnGoing .progress span').html("deploy on going, please wait...");
+            $('#deployOnGoing .progress').get(0).className = "progress progress-striped active";
         } else {
             $('#deployOnGoing .progress span').html(data.code);
         }
 
-        if (data.code.indexOf("total files") === 0) {
-            this.git.state = "scanFinish";
-            $('#deployModalButton').removeClass('disabled');
-            $('#deployModalButton').html("Deploy folder (" + data.code.split("estimate duration: ")[1] + ")");
-        }
-        if (data.code.indexOf("download finished") === 0) {
-            this.git.state = "downloadFinish";
-            $('#deployOnGoing .progress span').html("deploy on going, please wait...");
-            //this.git.socket.disconnect();
-            //this.git.socket = null;
-        }
+
     },
     getToken: function(callback) {
         $.get("/gitOauth", null, function(response) {

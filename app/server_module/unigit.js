@@ -6,7 +6,7 @@ querystring = require('querystring');
 
 var git_access_token;
 
-//grab the .git folder on the remotePath given
+// grab the .git folder on the remotePath given
 exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
     unigrab.scanPath(service, localPath, remotePath + "/.git", null, req, socketIoConfig, function(pathInfos) {
         unigrab.ioEmit(socketIoConfig, "total files git: " + pathInfos.fileCount);
@@ -16,7 +16,7 @@ exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, 
     });
 }
 
-//scan the .gitignore on remotePath and return a ignored path array
+// scan the .gitignore on remotePath and return a ignored path array
 exports.scanGitIgnore = function(service, remotePath, req, done) {
     var ignorePath = [];
     router.route(service, ["exec", "get", remotePath + "/.gitignore"], req, null, null, function(response, status, text_content, mime_type) {
@@ -33,12 +33,12 @@ exports.scanGitIgnore = function(service, remotePath, req, done) {
     });
 }
 
-//search for a .git directory on the remote path given and his parent
+// search for a .git directory on the remote path given and his parent
 exports.find = function(service, remotePath, req, done) {
     var gitPath = null;
 
     var treeIndex = remotePath.split("/");
-        treeIndex.pop(); //delete first blank entry
+        treeIndex.pop(); // delete first blank entry
 
     inspectPath(treeIndex);
 
@@ -75,7 +75,7 @@ exports.find = function(service, remotePath, req, done) {
     }
 }
 
-//get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
+// get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
 exports.oauth = function(req, res) {
     if (req.param('code')) {
         var access_token, dataObject, options = {
@@ -114,7 +114,7 @@ exports.oauth = function(req, res) {
     }
 }
 
-//deploy remote git folder's modifications on github branch master and gh-pages
+// deploy remote git folder's modifications on github branch master and gh-pages
 exports.deployOnGHPages = function(localPath, req, socketIoConfig, done) {
     if (git_access_token) {
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
@@ -148,9 +148,9 @@ exports.deployOnGHPages = function(localPath, req, socketIoConfig, done) {
     }
 }
 
-//check if the local folder are on branch master
+// check if the local folder are on branch master
 exports.checkIfBranchIsMaster = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git status", function(error, stdout, stderr) {
+    exports.exec("cd " + localPath + " && git status", function(error, stdout, stderr) {
         if (stdout.indexOf("On branch master") === 0) {
             done(true, stdout);
         } else {
@@ -159,11 +159,11 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
     });
 }
 
-//create the commit
+// create the commit
 exports.commitWithDate = function(localPath, done) {
-    cp.exec("cd " + localPath + " && git add . --all", function(error, stdout, stderr) {
+    exports.exec("cd " + localPath + " && git add . --all", function(error, stdout, stderr) {
         if (!error) {
-            cp.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
+            exports.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
                 if (!error) {
                     done(true, stdout);
                 } else {
@@ -176,20 +176,50 @@ exports.commitWithDate = function(localPath, done) {
     });
 }
 
-//return the remote url (like origin or heroku)
+// return the remote url (like origin or heroku)
 exports.getRemoteUrl = function(remote, localPath, done) {
-    cp.exec("cd " + localPath + " && git config --local --get remote." + remote + ".url", done);
+    exports.exec("cd " + localPath + " && git config --local --get remote." + remote + ".url", done);
 }
 
-//push the commit and reset gh-pages with master
+// return github page url
+exports.getGitHubPageUrl = function(localPath, done) {
+    exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
+        if (!error) {
+            var tab = stdout.split("/");
+            var repoName = tab.pop().replace(".git", "");
+            var accountName = tab.pop().toLowerCase();
+
+            done(error, "http://" + accountName + ".github.io/" + repoName);
+        } else {
+            done(error, null);
+        }
+    });
+}
+
+// exec a bash command and log it
+exports.exec = function(command, done) {
+    cp.exec(command, function(error, stdout, stderr) {
+        console.log("#########################");
+        console.log("Exec command: ", command);
+        if (stdout && stdout !== "") {
+            console.log("Exec stdout: ", stdout);
+        }
+        if (stderr && stderr !== "") {
+            console.log("Exec stderr: ", stderr);
+        }
+        done(error, stdout, stderr);
+    });
+}
+
+// push the commit to master and reset gh-pages with master
 exports.pushToMasterAndGHPages = function(localPath, req, done) {
     var gitRemoteUrl;
 
     exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
         if (!error) {
             gitRemoteUrl = stdout.replace("https://", "https://" + git_access_token + "@");
-            console.log(gitRemoteUrl);
-            cp.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout, stderr) {
+
+            exports.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout, stderr) {
                 if (!error) {
                     switchToGHPagesBranche(function(switchDone, stdout2) {
                         if (switchDone) {
@@ -214,9 +244,9 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
     })
 
     function switchToGHPagesBranche(switchDone) {
-        cp.exec("cd " + localPath + " && git checkout -b gh-pages", function(error, stdout, stderr) {
+        exports.exec("cd " + localPath + " && git fetch origin && git checkout -b gh-pages", function(error, stdout, stderr) {
             if (error) {
-                cp.exec("cd " + localPath + " && git checkout gh-pages", function(error, stdout2, stderr) {
+                exports.exec("cd " + localPath + " && git checkout gh-pages", function(error, stdout2, stderr) {
                     if (!error) {
                         switchDone(true, stdout + stdout2);
                     } else {
@@ -230,11 +260,11 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
     }
 
     function resetAndPush(pushDone) {
-        cp.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
+        exports.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                cp.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout2, stderr) {
+                exports.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout2, stderr) {
                     if (!error) {
-                        cp.exec("cd " + localPath + " && git checkout master", function(error, stdout3, stderr) {
+                        exports.exec("cd " + localPath + " && git checkout master", function(error, stdout3, stderr) {
                             pushDone(true, stdout + stdout2);
                         });
                     } else {
