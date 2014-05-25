@@ -4,6 +4,7 @@ https = require('https'),
 cp = require('child_process'),
 querystring = require('querystring');
 
+// FIXME USE THE COOKIE !!
 var git_access_token;
 
 // grab the .git folder on the remotePath given
@@ -51,10 +52,10 @@ exports.find = function(service, remotePath, req, done) {
                     if (isGit) {
                         gitPath = current;
                         done(gitPath);
-                    } else if (treeIndex !== null) {
+                    } else if (treeIndex.length > 0) {
                         currentTab.pop();
                         inspectPath(currentTab);
-                    } else if (treeIndex === null && gitPath === null) {
+                    } else if (treeIndex.length === 0 && gitPath === null) {
                         done(false);
                     }
                 });
@@ -91,6 +92,7 @@ exports.oauth = function(req, res) {
                 if (dataObject.access_token) {
                     access_token = dataObject.access_token;
                     res.cookie('git_access_token', access_token, {signed: true});
+                    res.write("<script>window.close()</script>");
                     res.send();
                 }
             });
@@ -115,8 +117,24 @@ exports.oauth = function(req, res) {
 }
 
 // deploy remote git folder's modifications on github branch master and gh-pages
-exports.deployOnGHPages = function(localPath, req, socketIoConfig, done) {
-    if (git_access_token) {
+exports.deployOnGHPages = function(localPath, initOnRepoUrl, req, socketIoConfig, done) {
+    if (initOnRepoUrl !== "" && git_access_token) {
+        // git init on folder to create the .git folder. then, add the remote url and start deploy again
+        exports.exec(localPath, "git init", function(error, stdout, stderr) {
+            if (!error) {
+                exports.exec(localPath, "git remote add origin " + initOnRepoUrl, function(error, stdout, stderr) {
+                    if (!error) {
+                        exports.deployOnGHPages(localPath, "", req, socketIoConfig, done);
+                    } else {
+                        console.log(error);
+                    }
+                });
+            } else {
+                console.log(error);
+            }
+        });
+    } else if (git_access_token) {
+        // start to deploy
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
             if (isOnMaster) {
                 console.log("### isOnMaster");
@@ -144,13 +162,14 @@ exports.deployOnGHPages = function(localPath, req, socketIoConfig, done) {
             }
         });
     } else {
+        // no connection on git, we must have the git access token before everything
         unigrab.ioEmit(socketIoConfig, "git not logged in");
     }
 }
 
 // check if the local folder are on branch master
 exports.checkIfBranchIsMaster = function(localPath, done) {
-    exports.exec("cd " + localPath + " && git status", function(error, stdout, stderr) {
+    exports.exec(localPath, "git status", function(error, stdout, stderr) {
         if (stdout.indexOf("On branch master") === 0) {
             done(true, stdout);
         } else {
@@ -161,9 +180,9 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
 
 // create the commit
 exports.commitWithDate = function(localPath, done) {
-    exports.exec("cd " + localPath + " && git add . --all", function(error, stdout, stderr) {
+    exports.exec(localPath, "git add . --all", function(error, stdout, stderr) {
         if (!error) {
-            exports.exec("cd " + localPath + " && git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
+            exports.exec(localPath, "git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
                 if (!error) {
                     done(true, stdout);
                 } else {
@@ -178,7 +197,7 @@ exports.commitWithDate = function(localPath, done) {
 
 // return the remote url (like origin or heroku)
 exports.getRemoteUrl = function(remote, localPath, done) {
-    exports.exec("cd " + localPath + " && git config --local --get remote." + remote + ".url", done);
+    exports.exec(localPath, "git config --local --get remote." + remote + ".url", done);
 }
 
 // return github page url
@@ -197,10 +216,11 @@ exports.getGitHubPageUrl = function(localPath, done) {
 }
 
 // exec a bash command and log it
-exports.exec = function(command, done) {
-    cp.exec(command, function(error, stdout, stderr) {
+exports.exec = function(localPath, command, done) {
+    cp.exec("cd " + localPath + " && " + command, function(error, stdout, stderr) {
         console.log("#########################");
         console.log("Exec command: ", command);
+        console.log("Exec path: ", localPath);
         if (stdout && stdout !== "") {
             console.log("Exec stdout: ", stdout);
         }
@@ -219,7 +239,7 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
         if (!error) {
             gitRemoteUrl = stdout.replace("https://", "https://" + git_access_token + "@");
 
-            exports.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout, stderr) {
+            exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout, stderr) {
                 if (!error) {
                     switchToGHPagesBranche(function(switchDone, stdout2) {
                         if (switchDone) {
@@ -244,9 +264,9 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
     })
 
     function switchToGHPagesBranche(switchDone) {
-        exports.exec("cd " + localPath + " && git fetch origin && git checkout -b gh-pages", function(error, stdout, stderr) {
+        exports.exec(localPath, "git fetch origin && git checkout -b gh-pages", function(error, stdout, stderr) {
             if (error) {
-                exports.exec("cd " + localPath + " && git checkout gh-pages", function(error, stdout2, stderr) {
+                exports.exec(localPath, "git checkout gh-pages", function(error, stdout2, stderr) {
                     if (!error) {
                         switchDone(true, stdout + stdout2);
                     } else {
@@ -260,11 +280,11 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
     }
 
     function resetAndPush(pushDone) {
-        exports.exec("cd " + localPath + " && git reset --hard origin/master", function(error, stdout, stderr) {
+        exports.exec(localPath, "git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                exports.exec("cd " + localPath + " && git push " + gitRemoteUrl, function(error, stdout2, stderr) {
+                exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout2, stderr) {
                     if (!error) {
-                        exports.exec("cd " + localPath + " && git checkout master", function(error, stdout3, stderr) {
+                        exports.exec(localPath, "git checkout master", function(error, stdout3, stderr) {
                             pushDone(true, stdout + stdout2);
                         });
                     } else {
@@ -276,4 +296,37 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
             }
         });
     }
+}
+
+exports.createRepo = function(repoName, done) {
+    var dataObject = "", options = {
+      headers: {"User-Agent": "BackNode", "Authorization": "token " + git_access_token},
+      hostname: 'api.github.com',
+      port: 443,
+      path: "/user/repos",
+      method: 'POST'
+    };
+
+    var r = https.request(options, function(res) {
+        res.on('data', function (chunk) {
+            dataObject += chunk.toString();
+        });
+
+        res.on('end', function() {
+            dataObject = JSON.parse(dataObject);
+            if (dataObject.clone_url) {
+                done(dataObject.clone_url);
+            } else {
+                done("");
+            }
+        });
+    });
+
+    r.on('error', function(error) {
+        console.log(error);
+        done("");
+    });
+
+    r.write(JSON.stringify({name: repoName.replace("/", "")}));
+    r.end();
 }

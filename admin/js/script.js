@@ -113,34 +113,41 @@ $(window.document).ready(function() {
 			if(file.mimetype === 'text/html') {
 				backNode.file = file;
 				$('#resize-iframe').css('background-image', 'none');
-				$(backNode.iframe).attr('src', file.url).load(function(){
-					// iFrame loaded
-					backNode.document = this.contentDocument;
-					backNode.editor.addCkeditor(backNode.document); //add ckeditor on iframe (rich text editor inline)
-					backNode.git.search.bind(backNode)(file.url, file.filename, $("#deploy")); //search if we have a git repo on dropbox folder tree, and bind a button if we want
+				if (!backNode.iframeAlreadyBind) {
+					$(backNode.iframe).load(function(){
+						// iFrame loaded
+						backNode.document = this.contentDocument;
+						backNode.editor.addCkeditor(backNode.document); //add ckeditor on iframe (rich text editor inline)
 
-					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
-						backNode.explorer.pick(function(file) {
-							var $img = backNode.editingPicture;
-							if(~imgAllowed.indexOf(file.mimetype)) {
-								var baseUrl = backNode.file.url.split('/');
-								baseUrl.pop();
-								baseUrl = baseUrl.join('/') + '/';
-								var imgUrl = absToRel(baseUrl, file.url);
-								$img.attr('src', imgUrl);
-								$('#bn-popinPicture div div span', $('#iframe').contents()).click();
-							} else {
-								window.alert('Invalid extension !');
-							}
+						var path = this.src.substr(0, this.src.lastIndexOf("/") + 1).replace(window.location.origin + "/api/v1.0/dropbox/exec/get/", "");
+						backNode.git.search.bind(backNode)(path, $("#deploy")); //search if we have a git repo on dropbox folder tree, and bind a button if we want
+
+						$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
+							backNode.explorer.pick(function(file) {
+								var $img = backNode.editingPicture;
+								if(~imgAllowed.indexOf(file.mimetype)) {
+									var baseUrl = backNode.file.url.split('/');
+									baseUrl.pop();
+									baseUrl = baseUrl.join('/') + '/';
+									var imgUrl = absToRel(baseUrl, file.url);
+									$img.attr('src', imgUrl);
+									$('#bn-popinPicture div div span', $('#iframe').contents()).click();
+								} else {
+									window.alert('Invalid extension !');
+								}
+							});
+						});
+
+						$('#dark-bgr').stop().fadeOut(150);
+						$('#tools ul li:not(#open, #deploy)').show();
+						$('#edit-mode').slideDown(function() {
+							$(window).resize();
 						});
 					});
+					backNode.iframeAlreadyBind = true;
+				}
 
-					$('#dark-bgr').stop().fadeOut(150);
-					$('#tools ul li:not(#open, #deploy)').show();
-					$('#edit-mode').slideDown(function() {
-						$(window).resize();
-					});
-				});
+				$(backNode.iframe).attr('src', file.url);
 			} else {
 				window.alert('Invalid extension !');
 			}

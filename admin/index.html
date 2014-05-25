@@ -36,7 +36,12 @@
                     </p>
                     <p>---------------------------------------------------------------------------------------------------</p>
                     <p>Please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
-                    <p>Otherwise, if it's too long (> 2/3mn), your project are maybe to big to grab all the informations</p>
+                    <p>Otherwise, if it's too long (> 10mn), your project are maybe to big to grab all the informations</p>
+                    <div id="chooseProjectFolder">
+                        <h3>Choose a project folder to init <i class="fa fa-github fa-1x"></i>Git on it:</h3>
+                        <input class="form-control pull-left" id="projectFolder" placeholder="Project folder" style="width:80%">&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button type="button" class="btn btn-success" id="buttonProjectFolder">Select</button>
+                    </div>
                     <div class="progress progress-striped active">
                       <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
                         <span></span>

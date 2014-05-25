@@ -38,7 +38,7 @@ BackNode.prototype.explorer = {
 
 BackNode.prototype.git = {
     //search a .git folder on a dropbox folder
-    search: function(filePath, fileName, deployButton) {
+    search: function(path, deployButton) {
         //reset previous git directory path
         this.git.path = null;
 
@@ -47,43 +47,72 @@ BackNode.prototype.git = {
             this.git.deployButton.on("click", this.git.showDeployWindow.bind(this));
             $('#deployModalButton').on("click", this.git.deploy.bind(this));
             $('#deployGitModalButton').on("click", this.git.showDeploySaved.bind(this));
+            $('#chooseProjectFolder button').on("click", function(){
+                $.get("/deploy/create", {name: $('#chooseProjectFolder input').attr("value")}, function(response) {
+                    var d = JSON.parse(response);
+                    this.git.path = $('#chooseProjectFolder input').attr("value");
+                    this.git.state = "Deploy";
+                    this.git.initOnUrl = d.repoUrl;
+                    this.git.showDeployWindow.bind(this)();
+                    this.git.deployButton.html(this.git.deployButton.html().replace("Init", "Deploy"));
+                }.bind(this));
+            }.bind(this));
         }
 
-        //retrieve dropbox path (replace unifile path and filename with blank)
-        var dropboxPath = filePath.replace("../api/v1.0/dropbox/exec/get/", "").replace(fileName, "");
+        this.git.dropboxPath = path;
 
-        $.get("/deploy/searchGit", {"path": dropboxPath}, function(response) {
+        $.get("/deploy/searchGit", {"path": this.git.dropboxPath}, function(response) {
             var d = JSON.parse(response);
+
             if (d.git) {
                 this.git.path = d.git;
-                if (this.git.deployButton) {
-                    this.git.deployButton.show();
-                }
+                this.git.state = "Deploy";
+                this.git.deployButton.html(this.git.deployButton.html().replace("Init", this.git.state));
+            } else {
+                this.git.state = "Init";
+                this.git.deployButton.html(this.git.deployButton.html().replace("Deploy", this.git.state));
             }
+
+            this.git.deployButton.show();
+            this.git.getToken.bind(this)();
         }.bind(this));
     },
     showDeployWindow: function() {
-        $('.modal-body #chooseFiles').hide();
-        $('#deployOnGoing textarea').hide().html("");
-        $('.modal-body #deployOnGoing').show();
-        $('#deployModalButton').show();
-        $('.modal-body #deployOnGoing p').show();
-        $('#deployGitModalButton').removeClass('disabled');
-        $('#deployModalButton').addClass('disabled');
-        $('#deployOnGoing center').hide();
+        if (!this.git.access_token) {
+            window.open("https://github.com/login/oauth/authorize?redirect_uri=http://localhost:8080/gitOauth/&scope=repo&client_id=79b7bd5afe5787355123&state=" + Date.now(),"_blank","width=1150,height=750");
+            this.git.access_token = "pending";
+        } else if (this.git.access_token === "pending") {
+            this.git.getToken.bind(this)(this.git.showDeployWindow.bind(this));
+        } else {
+            $('.modal-body #chooseFiles').hide();
+            $('#chooseProjectFolder').hide();
+            $('#deployOnGoing textarea').hide().html("");
+            $('.modal-body #deployOnGoing').show();
+            $('#deployModalButton').show();
+            $('.modal-body #deployOnGoing p').show();
+            $('#deployGitModalButton').removeClass('disabled');
+            $('#deployModalButton').addClass('disabled');
+            $('#deployOnGoing center').hide();
+            $('#deployOnGoing .progress').show();
 
-        $.get("/deploy/scan", {"path": this.git.path}, function(response) {
-            this.git.deployKey = JSON.parse(response).deployKey;
-            if (!this.git.socket) {
-                this.git.socket = io.connect("http://" + window.location.hostname);
+            $('.modal').modal('show');
+
+            if (this.git.state === "Init") {
+                $('#chooseProjectFolder').show();
+                $('#deployOnGoing .progress').hide();
+                $('#chooseProjectFolder input').attr("value", this.git.dropboxPath);
+            } else {
+                $.get("/deploy/scan", {"path": this.git.path}, function(response) {
+                    this.git.deployKey = JSON.parse(response).deployKey;
+                    if (!this.git.socket) {
+                        this.git.socket = io.connect("http://" + window.location.hostname);
+                    }
+                    this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
+                }.bind(this));
+
+                this.git.state = "homeDeploy";
             }
-            this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
-        }.bind(this));
-
-        this.git.getToken.bind(this)();
-
-        $('.modal').modal('show');
-        this.git.state = "homeDeploy";
+        }
     },
     showDeploySaved: function() {
         if ($('.modal-body #chooseFiles').html() !== "") {
@@ -113,17 +142,13 @@ BackNode.prototype.git = {
         }
     },
     deploy: function() {
-        if (this.git.access_token === "pending") {
-            this.git.getToken.bind(this)(this.git.deploy.bind(this));
-        } else if (this.git.access_token) {
+        if (this.git.access_token) {
             $('#deployModalButton').addClass('disabled');
             $('#deployGitModalButton').addClass('disabled');
             $('.modal-body #deployOnGoing p').hide();
-            $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey});
+            $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey, "initOnUrl": this.git.initOnUrl || ""});
+            this.git.initOnUrl = ""; //if necessary, init is normally done
             this.git.state = "deployStarted";
-        } else {
-            window.open("https://github.com/login/oauth/authorize?redirect_uri=http://localhost:8080/gitOauth/&scope=repo&client_id=79b7bd5afe5787355123&state=" + Date.now(),"_blank","width=1150,height=750");
-            this.git.access_token = "pending";
         }
     },
     deployJustGit: function() {
