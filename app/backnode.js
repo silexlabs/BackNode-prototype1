@@ -37,26 +37,48 @@ BackNode.prototype.explorer = {
 };
 
 BackNode.prototype.git = {
+    STATES : {
+        INIT: 1,
+        GO_DEPLOY: 2,
+        DEPLOY: 3,
+        DOWNLOAD_FINISH: 4,
+        SCAN_FINISH: 5
+    },
+    // retrieve ui from document node
+    getUI: function() {
+        this.git.ui = {
+            container: $('.modal'),
+            progressBar: $('#deployOnGoing .progress'),
+            progressBarCurrent: $('#deployOnGoing .progress-bar'),
+            btDeploy: $('#deployModalButton'),
+            btDeployGit: $('#deployGitModalButton'),
+            btCreate: $('#chooseProjectFolder button'),
+            inputCreate: $('#chooseProjectFolder input'),
+            boxChooseFile: $('.modal-body #chooseFiles'),
+            boxCreate: $('#chooseProjectFolder'),
+            boxDeploy: $('.modal-body #deployOnGoing'),
+            textDeploy: $('#deployOnGoing textarea'),
+            textManGit: $('.modal-body #deployOnGoing p'),
+            textGitHubPageUrl: $('#deployOnGoing center'),
+            textProgressBar: $('#deployOnGoing .progress span'),
+            templateCB: "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>"
+        };
+    },
     //search a .git folder on a dropbox folder
     search: function(path, deployButton) {
         //reset previous git directory path
         this.git.path = null;
 
+        if (!this.git.ui) {
+            this.git.getUI.bind(this)();
+        }
+
         if (!this.git.deployButton) {
             this.git.deployButton = deployButton;
             this.git.deployButton.on("click", this.git.showDeployWindow.bind(this));
-            $('#deployModalButton').on("click", this.git.deploy.bind(this));
-            $('#deployGitModalButton').on("click", this.git.showDeploySaved.bind(this));
-            $('#chooseProjectFolder button').on("click", function(){
-                $.get("/deploy/create", {name: $('#chooseProjectFolder input').attr("value")}, function(response) {
-                    var d = JSON.parse(response);
-                    this.git.path = $('#chooseProjectFolder input').attr("value");
-                    this.git.state = "Deploy";
-                    this.git.initOnUrl = d.repoUrl;
-                    this.git.showDeployWindow.bind(this)();
-                    this.git.deployButton.html(this.git.deployButton.html().replace("Init", "Deploy"));
-                }.bind(this));
-            }.bind(this));
+            this.git.ui.btDeploy.on("click", this.git.deploy.bind(this));
+            this.git.ui.btDeployGit.on("click", this.git.showDeploySaved.bind(this));
+            this.git.ui.btCreate.on("click", this.git.createRepo.bind(this));
         }
 
         this.git.dropboxPath = path;
@@ -66,11 +88,11 @@ BackNode.prototype.git = {
 
             if (d.git) {
                 this.git.path = d.git;
-                this.git.state = "Deploy";
-                this.git.deployButton.html(this.git.deployButton.html().replace("Init", this.git.state));
+                this.git.state = this.git.STATES.GO_DEPLOY;
+                this.git.deployButton.html(this.git.deployButton.html().replace("Init", "Deploy"));
             } else {
-                this.git.state = "Init";
-                this.git.deployButton.html(this.git.deployButton.html().replace("Deploy", this.git.state));
+                this.git.state = this.git.STATES.INIT;
+                this.git.deployButton.html(this.git.deployButton.html().replace("Deploy", "Init"));
             }
 
             this.git.deployButton.show();
@@ -84,23 +106,25 @@ BackNode.prototype.git = {
         } else if (this.git.access_token === "pending") {
             this.git.getToken.bind(this)(this.git.showDeployWindow.bind(this));
         } else {
-            $('.modal-body #chooseFiles').hide();
-            $('#chooseProjectFolder').hide();
-            $('#deployOnGoing textarea').hide().html("");
-            $('.modal-body #deployOnGoing').show();
-            $('#deployModalButton').show();
-            $('.modal-body #deployOnGoing p').show();
-            $('#deployGitModalButton').removeClass('disabled');
-            $('#deployModalButton').addClass('disabled');
-            $('#deployOnGoing center').hide();
-            $('#deployOnGoing .progress').show();
+            this.git.ui.boxChooseFile.hide();
+            this.git.ui.boxCreate.hide();
+            this.git.ui.textDeploy.hide().html("");
+            this.git.ui.boxDeploy.show();
+            this.git.ui.btDeploy.show();
+            this.git.ui.textManGit.show();
+            this.git.ui.btDeployGit.removeClass('disabled');
+            this.git.ui.btDeploy.addClass('disabled');
+            this.git.ui.textGitHubPageUrl.hide();
+            this.git.ui.progressBar.show();
+            this.git.ui.progressBarCurrent.get(0).className = "progress-bar";
+            this.git.ui.progressBar.get(0).className = "progress progress-striped active";
 
-            $('.modal').modal('show');
+            this.git.ui.container.modal('show');
 
-            if (this.git.state === "Init") {
-                $('#chooseProjectFolder').show();
-                $('#deployOnGoing .progress').hide();
-                $('#chooseProjectFolder input').attr("value", this.git.dropboxPath);
+            if (this.git.state === this.git.STATES.INIT) {
+                this.git.ui.boxCreate.show();
+                this.git.ui.progressBar.hide();
+                this.git.ui.inputCreate.attr("value", this.git.dropboxPath);
             } else {
                 $.get("/deploy/scan", {"path": this.git.path}, function(response) {
                     this.git.deployKey = JSON.parse(response).deployKey;
@@ -110,45 +134,43 @@ BackNode.prototype.git = {
                     this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
                 }.bind(this));
 
-                this.git.state = "homeDeploy";
+                this.git.state = this.git.STATES.DEPLOY;
             }
         }
     },
     showDeploySaved: function() {
-        if ($('.modal-body #chooseFiles').html() !== "") {
-            $('.modal-body #chooseFiles').html("");
-            $('.modal-body #deployOnGoing p').hide();
-            $('.modal-body #deployOnGoing').show();
+        if (this.git.ui.boxChooseFile.html() !== "") {
+            this.git.ui.boxChooseFile.html("");
+            this.git.ui.textManGit.hide();
+            this.git.ui.boxDeploy.show();
             this.git.deployJustGit.bind(this)();
         } else {
-            var templateCB = "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>";
-            $('.modal-body #chooseFiles').show();
-            $('.modal-body #deployOnGoing').hide();
-            $('#deployModalButton').hide();
-            $('.modal-title').html("Please select some files to deploy");
-            $('#deployGitModalButton').addClass('disabled');
+            this.git.ui.boxChooseFile.show();
+            this.git.ui.boxDeploy.hide();
+            this.git.ui.btDeploy.hide();
+            this.git.ui.btDeployGit.addClass('disabled');
 
             if (this.fileSaved.length > 0) {
                 for (var i in this.fileSaved) {
                     if (this.fileSaved.hasOwnProperty(i)) {
-                        $('.modal-body #chooseFiles').append(templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
+                        this.git.ui.boxChooseFile.append(this.git.ui.templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
                     }
                 }
-                $('#deployGitModalButton').removeClass('disabled');
+                this.git.ui.btDeployGit.removeClass('disabled');
             } else {
-                $('.modal-body #chooseFiles').append("You haven't save any files, so nothing to deploy...");
-                $('#deployGitModalButton').addClass('disabled');
+                this.git.ui.boxChooseFile.append("You haven't save any files, so nothing to deploy...");
+                this.git.ui.btDeployGit.addClass('disabled');
             }
         }
     },
     deploy: function() {
         if (this.git.access_token) {
-            $('#deployModalButton').addClass('disabled');
-            $('#deployGitModalButton').addClass('disabled');
-            $('.modal-body #deployOnGoing p').hide();
+            this.git.ui.btDeploy.addClass('disabled');
+            this.git.ui.btDeployGit.addClass('disabled');
+            this.git.ui.textManGit.hide();
             $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey, "initOnUrl": this.git.initOnUrl || ""});
             this.git.initOnUrl = ""; //if necessary, init is normally done
-            this.git.state = "deployStarted";
+            this.git.state = this.git.STATES.DEPLOY;
         }
     },
     deployJustGit: function() {
@@ -162,52 +184,69 @@ BackNode.prototype.git = {
             }
         });
 
-        $('#deployModalButton').addClass('disabled');
-        $('#deployGitModalButton').addClass('disabled');
+        this.git.ui.btDeploy.addClass('disabled');
+        this.git.ui.btDeployGit.addClass('disabled');
 
         //TODO must be finished (grab the saved file too)
         $.get("/deploy/git", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
     },
+    // Get the current deploying status from the server with socketIo
     getDeployStatus: function(data) {
+        if (this.git.state === this.git.STATES.DOWNLOAD_FINISH) {
+            //download is finish, git deploy on going
+            this.git.ui.textDeploy.show();
+            this.git.ui.textDeploy.append("\n");
+            this.git.ui.textDeploy.append(data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
 
-        if (this.git.state === "downloadFinish") {
-            $('#deployOnGoing textarea').show();
-            $('#deployOnGoing textarea').append("\n");
-            $('#deployOnGoing textarea').append(data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-
+            //git deploy is finish, update the .git folder on dropbox
             if (data.code === "update git project status on your dropbox folder...") {
-                $('#deployOnGoing .progress span').html(data.code);
-                $('#deployOnGoing textarea').hide();
+                this.git.ui.textProgressBar.html(data.code);
+                this.git.ui.textDeploy.hide();
                 this.git.state = data.code;
             }
         } else if (data.code.indexOf("http://") === 0) {
-            $('#deployOnGoing center').show();
-            $('#deployOnGoing center').html("<a href='" + data.code + "' target='_blank'>" + data.code + "</a>");
-            $('#deployOnGoing .progress span').append("   <i class='fa fa-check-square-o'></i>");
+            //everything is finish, show the return url (GitHub Page or Heroku, etc..)
+            this.git.ui.textGitHubPageUrl.show();
+            this.git.ui.textGitHubPageUrl.html("<a href='" + data.code + "' target='_blank'>" + data.code + "</a>");
+            this.git.ui.textProgressBar.append("   <i class='fa fa-check-square-o'></i>");
+            this.git.ui.progressBarCurrent.get(0).className = "progress-bar progress-bar-success";
+            this.git.ui.progressBar.get(0).className = "progress";
         } else if (data.code.indexOf("files found:") === 0) {
+            //currently scanning the folder
             if (data.code.indexOf("files found: 1") === 0) {
-                $('#deployOnGoing .progress span').html("scanning your folder <i class='fa fa-refresh fa-spin'></i>");
+                this.git.ui.textProgressBar.html("scanning your folder <i class='fa fa-refresh fa-spin'></i>");
             }
         } else if (data.code.indexOf("total files") === 0) {
-            this.git.state = "scanFinish";
-            $('#deployModalButton').removeClass('disabled');
-            $('#deployModalButton').html("Deploy folder <i class='fa fa-cog fa-spin'></i>");
-            $('#deployOnGoing .progress span').html("scan finished <i class='fa fa-check-square-o'></i>");
-            $('#deployOnGoing .progress').get(0).className = "progress";
+            //scan is finish, user have to click for start deployment
+            this.git.state = this.git.STATES.SCAN_FINISH;
+            this.git.ui.btDeploy.removeClass('disabled');
+            this.git.ui.textProgressBar.html("scan finished <i class='fa fa-check-square-o'></i>");
+            this.git.ui.progressBar.get(0).className = "progress";
         } else if (data.code.indexOf("download status:") === 0) {
+            //project download ongoing by the server before it try to deploy git
             var tabDl = data.code.replace("download status: ", "").split("/");
             var toWidth = Math.ceil(((parseInt(tabDl[0]) * 100) / parseInt(tabDl[1]))) + "%";
-            $('#deployOnGoing .progress-bar').css("width",  toWidth);
-            $('#deployOnGoing .progress span').html(toWidth);
+            this.git.ui.progressBarCurrent.css("width",  toWidth);
+            this.git.ui.textProgressBar.html(toWidth);
         } else if (data.code.indexOf("download finished") === 0) {
-            this.git.state = "downloadFinish";
-            $('#deployOnGoing .progress span').html("deploy on going, please wait...");
-            $('#deployOnGoing .progress').get(0).className = "progress progress-striped active";
+            //download finished !
+            this.git.state = this.git.STATES.DOWNLOAD_FINISH;
+            this.git.ui.textProgressBar.html("deploy on going, please wait...");
+            this.git.ui.progressBar.get(0).className = "progress progress-striped active";
         } else {
-            $('#deployOnGoing .progress span').html(data.code);
+            //everything else
+            this.git.ui.textProgressBar.html(data.code);
         }
-
-
+    },
+    createRepo : function() {
+        $.get("/deploy/create", {name: this.git.ui.inputCreate.attr("value")}, function(response) {
+            var d = JSON.parse(response);
+            this.git.path = this.git.ui.inputCreate.attr("value");
+            this.git.state = this.git.STATES.GO_DEPLOY;
+            this.git.initOnUrl = d.repoUrl;
+            this.git.showDeployWindow.bind(this)();
+            this.git.deployButton.html(this.git.deployButton.html().replace("Init", "Deploy"));
+        }.bind(this));
     },
     getToken: function(callback) {
         $.get("/gitOauth", null, function(response) {
