@@ -168,7 +168,7 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
 // check if the local folder are on branch master
 exports.checkIfBranchIsMaster = function(localPath, done) {
     exports.exec(localPath, "git status", function(error, stdout, stderr) {
-        if (stdout.indexOf("On branch master") === 0) {
+        if (stdout.indexOf("On branch master") !== -1) {
             done(true, stdout);
         } else {
             done(false, stdout);
