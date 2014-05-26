@@ -75,7 +75,7 @@ backnode.use('/deploy', bodyParser())
         break;
 
         case 'create':
-            unigit.createRepo(req.param('name'), function(repoUrl) {
+            unigit.createRepo(req.param('name'), req.param('accessToken'), function(repoUrl) {
                 res.write(JSON.stringify({repoUrl: repoUrl}));
                 res.send();
             });
@@ -84,7 +84,7 @@ backnode.use('/deploy', bodyParser())
         case 'all' :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", localPath, pathFileInfo[req.param('deployKey')], req, socketIoConfig, function(message) {
-                unigit.deployOnGHPages(localPath + "/" + req.param('path'), req.param('initOnUrl'), req, socketIoConfig, function(done) {
+                unigit.deployOnGHPages(localPath + "/" + req.param('path'), req.param('accessToken'), req.param('initOnUrl'), req, socketIoConfig, function(done) {
                     if (done) {
                         var gitFolder = req.param('path') + "/.git";
                         unigrab.ioEmit(socketIoConfig, "update git project status on your dropbox folder...");

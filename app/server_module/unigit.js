@@ -4,9 +4,6 @@ https = require('https'),
 cp = require('child_process'),
 querystring = require('querystring');
 
-// FIXME USE THE COOKIE !!
-var git_access_token;
-
 // grab the .git folder on the remotePath given
 exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
     unigrab.scanPath(service, localPath, remotePath + "/.git", null, req, socketIoConfig, function(pathInfos) {
@@ -108,7 +105,7 @@ exports.oauth = function(req, res) {
         var returnValue = false;
 
         if (req.signedCookies.git_access_token) {
-            returnValue = git_access_token = req.signedCookies.git_access_token;
+            returnValue = req.signedCookies.git_access_token;
         }
 
         res.write(JSON.stringify({access_token: returnValue}));
@@ -117,8 +114,8 @@ exports.oauth = function(req, res) {
 }
 
 // deploy remote git folder's modifications on github branch master and gh-pages
-exports.deployOnGHPages = function(localPath, initOnRepoUrl, req, socketIoConfig, done) {
-    if (initOnRepoUrl !== "" && git_access_token) {
+exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, socketIoConfig, done) {
+    if (initOnRepoUrl !== "" && accessToken) {
         // git init on folder to create the .git folder. then, add the remote url and start deploy again
         exports.exec(localPath, "git init", function(error, stdout, stderr) {
             if (!error) {
@@ -133,7 +130,7 @@ exports.deployOnGHPages = function(localPath, initOnRepoUrl, req, socketIoConfig
                 console.log(error);
             }
         });
-    } else if (git_access_token) {
+    } else if (accessToken) {
         // start to deploy
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
             if (isOnMaster) {
@@ -143,7 +140,7 @@ exports.deployOnGHPages = function(localPath, initOnRepoUrl, req, socketIoConfig
 
                     if (commitIsDone) {
                         console.log("### commitIsDone");
-                        exports.pushToMasterAndGHPages(localPath, req, function(deployDone, stdout) {
+                        exports.pushToMasterAndGHPages(localPath, accessToken, req, function(deployDone, stdout) {
                             unigrab.ioEmit(socketIoConfig, stdout);
                             if (deployDone) {
                                 done(true);
@@ -232,12 +229,12 @@ exports.exec = function(localPath, command, done) {
 }
 
 // push the commit to master and reset gh-pages with master
-exports.pushToMasterAndGHPages = function(localPath, req, done) {
+exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     var gitRemoteUrl;
 
     exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
         if (!error) {
-            gitRemoteUrl = stdout.replace("https://", "https://" + git_access_token + "@");
+            gitRemoteUrl = stdout.replace("https://", "https://" + accessToken + "@");
 
             exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout, stderr) {
                 if (!error) {
@@ -298,9 +295,9 @@ exports.pushToMasterAndGHPages = function(localPath, req, done) {
     }
 }
 
-exports.createRepo = function(repoName, done) {
+exports.createRepo = function(repoName, accessToken, done) {
     var dataObject = "", options = {
-      headers: {"User-Agent": "BackNode", "Authorization": "token " + git_access_token},
+      headers: {"User-Agent": "BackNode", "Authorization": "token " + accessToken},
       hostname: 'api.github.com',
       port: 443,
       path: "/user/repos",

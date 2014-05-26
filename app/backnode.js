@@ -168,7 +168,7 @@ BackNode.prototype.git = {
             this.git.ui.btDeploy.addClass('disabled');
             this.git.ui.btDeployGit.addClass('disabled');
             this.git.ui.textManGit.hide();
-            $.get("/deploy/all", {"path": this.git.path, "deployKey": this.git.deployKey, "initOnUrl": this.git.initOnUrl || ""});
+            $.get("/deploy/all", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token});
             this.git.initOnUrl = ""; //if necessary, init is normally done
             this.git.state = this.git.STATES.DEPLOY;
         }
@@ -239,7 +239,7 @@ BackNode.prototype.git = {
         }
     },
     createRepo : function() {
-        $.get("/deploy/create", {name: this.git.ui.inputCreate.attr("value")}, function(response) {
+        $.get("/deploy/create", {name: this.git.ui.inputCreate.attr("value"), accessToken: this.git.access_token}, function(response) {
             var d = JSON.parse(response);
             this.git.path = this.git.ui.inputCreate.attr("value");
             this.git.state = this.git.STATES.GO_DEPLOY;
