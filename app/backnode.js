@@ -97,11 +97,20 @@ BackNode.prototype.git = {
 
             this.git.deployButton.show();
             this.git.getToken.bind(this)();
+
+            //get git app conf
+            $.get("/conf/gitAppId.json", null, function(response) {
+                if (response.client_id && response.client_secret && response.client_redirect) {
+                    this.git.appId = response;
+                } else {
+                    window.console.warn("In order to use git plugin, you must fill your app info on file /app/conf/gitAppId.js");
+                }
+            }.bind(this));
         }.bind(this));
     },
     showDeployWindow: function() {
         if (!this.git.access_token) {
-            window.open("https://github.com/login/oauth/authorize?redirect_uri=http://localhost:8080/gitOauth/&scope=repo&client_id=79b7bd5afe5787355123&state=" + Date.now(),"_blank","width=1150,height=750");
+            window.open("https://github.com/login/oauth/authorize?redirect_uri=" + this.git.appId.client_redirect + "/gitOauth/&scope=repo&client_id=" + this.git.appId.client_id + "&state=" + Date.now(),"_blank","width=1150,height=750");
             this.git.access_token = "pending";
         } else if (this.git.access_token === "pending") {
             this.git.getToken.bind(this)(this.git.showDeployWindow.bind(this));

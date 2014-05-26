@@ -2,7 +2,8 @@ var router = require('unifile/lib/core/router.js'),
 unigrab = require('./unigrab.js'),
 https = require('https'),
 cp = require('child_process'),
-querystring = require('querystring');
+querystring = require('querystring'),
+gitAppId = require('../conf/gitAppId.json');
 
 // grab the .git folder on the remotePath given
 exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
@@ -99,7 +100,7 @@ exports.oauth = function(req, res) {
             console.log(error);
         });
 
-        gitResponse.write('client_id=79b7bd5afe5787355123&client_secret=4d52c270bb7e45f228328169d281e42c282d4756&code=' + req.param('code'));
+        gitResponse.write('client_id=' + gitAppId.client_id + '&client_secret=' + gitAppId.client_secret + '&code=' + req.param('code'));
         gitResponse.end();
     } else {
         var returnValue = false;
