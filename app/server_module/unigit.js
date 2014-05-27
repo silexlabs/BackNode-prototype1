@@ -5,7 +5,10 @@ cp = require('child_process'),
 querystring = require('querystring'),
 gitAppId = require('../conf/gitAppId.json');
 
-// grab the .git folder on the remotePath given
+/*
+ * @method grabGit grab the .git folder on the remotePath given
+ *
+ */
 exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
     unigrab.scanPath(service, localPath, remotePath + "/.git", null, req, socketIoConfig, function(pathInfos) {
         unigrab.ioEmit(socketIoConfig, "total files git: " + pathInfos.fileCount);
@@ -15,7 +18,10 @@ exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, 
     });
 }
 
-// scan the .gitignore on remotePath and return a ignored path array
+/*
+ * @method scanGitIgnore scan the .gitignore on remotePath and return a ignored path array
+ *
+ */
 exports.scanGitIgnore = function(service, remotePath, req, done) {
     var ignorePath = [];
     router.route(service, ["exec", "get", remotePath + "/.gitignore"], req, null, null, function(response, status, text_content, mime_type) {
@@ -32,7 +38,10 @@ exports.scanGitIgnore = function(service, remotePath, req, done) {
     });
 }
 
-// search for a .git directory on the remote path given and his parent
+/*
+ * @method find search for a .git directory on the remote path given and his parent
+ *
+ */
 exports.find = function(service, remotePath, req, done) {
     var gitPath = null;
 
@@ -74,7 +83,10 @@ exports.find = function(service, remotePath, req, done) {
     }
 }
 
-// get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
+/*
+ * @method oauth get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
+ *
+ */
 exports.oauth = function(req, res) {
     if (req.param('code')) {
         var access_token, dataObject, options = {
@@ -114,7 +126,10 @@ exports.oauth = function(req, res) {
     }
 }
 
-// deploy remote git folder's modifications on github branch master and gh-pages
+/*
+ * @method deployOnGHPages deploy remote git folder's modifications on github branch master and gh-pages
+ *
+ */
 exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, socketIoConfig, done) {
     if (initOnRepoUrl !== "" && accessToken) {
         // git init on folder to create the .git folder. then, add the remote url and start deploy again
@@ -135,12 +150,10 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
         // start to deploy
         exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
             if (isOnMaster) {
-                console.log("### isOnMaster");
                 exports.commitWithDate(localPath, function(commitIsDone, stdout) {
                     unigrab.ioEmit(socketIoConfig, stdout);
 
                     if (commitIsDone) {
-                        console.log("### commitIsDone");
                         exports.pushToMasterAndGHPages(localPath, accessToken, req, function(deployDone, stdout) {
                             unigrab.ioEmit(socketIoConfig, stdout);
                             if (deployDone) {
@@ -152,20 +165,26 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
                         });
                     } else {
                         console.log("### " + stdout);
+                        done(false);
                     }
                 });
 
             } else {
                 unigrab.ioEmit(socketIoConfig, "your git folder are not on master branch");
+                done(false);
             }
         });
     } else {
         // no connection on git, we must have the git access token before everything
         unigrab.ioEmit(socketIoConfig, "git not logged in");
+        done(false);
     }
 }
 
-// check if the local folder are on branch master
+/*
+ * @method checkIfBranchIsMaster check if the local folder are on branch master
+ *
+ */
 exports.checkIfBranchIsMaster = function(localPath, done) {
     exports.exec(localPath, "git status", function(error, stdout, stderr) {
         if (stdout.indexOf("On branch master") !== -1) {
@@ -176,7 +195,10 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
     });
 }
 
-// create the commit
+/*
+ * @method commitWithDate create the commit
+ *
+ */
 exports.commitWithDate = function(localPath, done) {
     exports.exec(localPath, "git add . --all", function(error, stdout, stderr) {
         if (!error) {
@@ -193,12 +215,18 @@ exports.commitWithDate = function(localPath, done) {
     });
 }
 
-// return the remote url (like origin or heroku)
+/*
+ * @method getRemoteUrl return the remote url (like origin or heroku)
+ *
+ */
 exports.getRemoteUrl = function(remote, localPath, done) {
     exports.exec(localPath, "git config --local --get remote." + remote + ".url", done);
 }
 
-// return github page url
+/*
+ * @method getGitHubPageUrl return github page url
+ *
+ */
 exports.getGitHubPageUrl = function(localPath, done) {
     exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
         if (!error) {
@@ -213,7 +241,10 @@ exports.getGitHubPageUrl = function(localPath, done) {
     });
 }
 
-// exec a bash command and log it
+/*
+ * @method exec exec a bash command and log it
+ *
+ */
 exports.exec = function(localPath, command, done) {
     cp.exec("cd " + localPath + " && " + command, function(error, stdout, stderr) {
         console.log("#########################");
@@ -229,7 +260,10 @@ exports.exec = function(localPath, command, done) {
     });
 }
 
-// push the commit to master and reset gh-pages with master
+/*
+ * @method pushToMasterAndGHPages push the commit to master and reset gh-pages with master
+ *
+ */
 exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     var gitRemoteUrl;
 
@@ -296,6 +330,10 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     }
 }
 
+/*
+ * @method createRepo create a remote repo on git with github webapi
+ *
+ */
 exports.createRepo = function(repoName, accessToken, done) {
     var dataObject = "", options = {
       headers: {"User-Agent": "BackNode", "Authorization": "token " + accessToken},
@@ -327,4 +365,12 @@ exports.createRepo = function(repoName, accessToken, done) {
 
     r.write(JSON.stringify({name: repoName.replace("/", "")}));
     r.end();
+}
+
+/*
+ * @method deleteLocalPath delete folder at the given path
+ *
+ */
+exports.deleteLocalPath = function(localPath, done) {
+    exports.exec(".", "rm -rf " + localPath, done || function(){});
 }

@@ -93,14 +93,18 @@ backnode.use('/deploy', bodyParser())
                             if (!error) {
                                 unigrab.ioEmit(socketIoConfig, "git updated, deploy ok");
                                 unigit.getGitHubPageUrl(localPath + "/" + req.param('path'), function(error, stdout) {
+                                    unigit.deleteLocalPath(localPath);
                                     if (!error) {
                                         unigrab.ioEmit(socketIoConfig, stdout);
                                     }
                                 });
                             } else {
                                 unigrab.ioEmit(socketIoConfig, "git not updated, deploy error");
+                                unigit.deleteLocalPath(localPath);
                             }
                         });
+                    } else {
+                        unigit.deleteLocalPath(localPath);
                     }
                 });
             });
