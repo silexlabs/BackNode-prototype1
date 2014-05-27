@@ -83,7 +83,7 @@ BackNode.prototype.git = {
 
         this.git.dropboxPath = path;
 
-        $.get("/deploy/searchGit", {"path": this.git.dropboxPath}, function(response) {
+        $.get("/deploy/search", {"path": this.git.dropboxPath}, function(response) {
             var d = JSON.parse(response);
 
             if (d.git) {

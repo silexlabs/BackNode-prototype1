@@ -1,9 +1,115 @@
-var router = require('unifile/lib/core/router.js'),
-unigrab = require('./unigrab.js'),
-https = require('https'),
-cp = require('child_process'),
+var cookieSession = require('cookie-session'),
+cookieParser = require('cookie-parser'),
 querystring = require('querystring'),
-gitAppId = require('../conf/gitAppId.json');
+bodyParser = require('body-parser'),
+gitAppId = require('../conf/gitAppId.json'),
+unigrab = require('./unigrab.js'),
+uniput = require('./uniput.js'),
+router = require('unifile/lib/core/router.js')
+https = require('https'),
+cp = require('child_process');
+
+var pathFileInfo = {};
+
+/*
+ * @method middleware use unigit as a middleware like unifile
+ *
+ */
+exports.middleware = function(app, socketIo) {
+    //git oauth
+    app.use('/gitOauth', cookieParser('backNodeGit'));
+    app.use('/gitOauth', cookieSession({ secret: 'backNodeGit'}));
+    app.get('/gitOauth', exports.oauth);
+
+    //to use unifile as an api
+    app.use('/deploy', bodyParser());
+    app.use('/deploy', cookieParser());
+    app.use('/deploy', cookieSession({ secret: 'plum plum plum'}));
+
+    //dispatch
+    app.get('/deploy/:type', function(req, res) {
+        exports.routeur(req, res, socketIo);
+    });
+
+    return function(req, res, next) { next(); };
+}
+
+exports.routeur = function(req, res, socketIo) {
+    var socketIoConfig = {io:socketIo, key:req.param('deployKey')};
+    var localPath = "tempFolder/" + req.param('deployKey');
+
+    switch (req.param('type')) {
+
+        case 'search':
+            exports.find("dropbox", req.param('path'), req, function(isGit) {
+                res.write(JSON.stringify({git: isGit}));
+                res.send();
+            });
+        break;
+
+        case 'scan':
+            var rd = Date.now() * (Math.random() * 10000);
+            var deployKey = rd.toString().replace(".", "");
+            socketIoConfig.key = deployKey;
+
+            exports.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
+                unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, socketIoConfig, function(pathInfos) {
+                    unigrab.ioEmit(socketIoConfig, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
+                    pathFileInfo[deployKey] = pathInfos;
+                });
+            });
+
+            res.write(JSON.stringify({deployKey: deployKey}));
+            res.send();
+        break;
+
+        case 'git':
+            // grab the .git folder on user remote directory (we don't need other files to deploy modification)
+            // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
+            exports.grabGit("dropbox", localPath, req.param('path'), req, socketIoConfig, function(message) {
+                unigrab.ioEmit(socketIoConfig, message);
+            });
+            res.send();
+        break;
+
+        case 'create':
+            exports.createRemoteRepo(req.param('name'), req.param('accessToken'), function(repoUrl) {
+                res.write(JSON.stringify({repoUrl: repoUrl}));
+                res.send();
+            });
+        break;
+
+        case 'all' :
+            // grab a folder (not just .git)
+            unigrab.grabFolder("dropbox", localPath, pathFileInfo[req.param('deployKey')], req, socketIoConfig, function(message) {
+                exports.deployOnGHPages(localPath + "/" + req.param('path'), req.param('accessToken'), req.param('initOnUrl'), req, socketIoConfig, function(done) {
+                    if (done) {
+                        var gitFolder = req.param('path') + "/.git";
+                        unigrab.ioEmit(socketIoConfig, "update git project status on your dropbox folder...");
+                        // when deploy is finish on gitHub, we must update the .git folder on dropbox, because we do the commit on backnode local machine, so the dropbox project don't know about commit
+                        uniput.putFolder("dropbox", localPath, gitFolder, req, function(error) {
+                            if (!error) {
+                                unigrab.ioEmit(socketIoConfig, "git updated, deploy ok");
+                                exports.getGitHubPageUrl(localPath + "/" + req.param('path'), function(error, stdout) {
+                                    exports.deleteLocalPath(localPath);
+                                    if (!error) {
+                                        unigrab.ioEmit(socketIoConfig, stdout);
+                                    }
+                                });
+                            } else {
+                                unigrab.ioEmit(socketIoConfig, "git not updated, deploy error");
+                                exports.deleteLocalPath(localPath);
+                            }
+                        });
+                    } else {
+                        exports.deleteLocalPath(localPath);
+                    }
+                });
+            });
+            res.send();
+        break;
+    }
+}
 
 /*
  * @method grabGit grab the .git folder on the remotePath given
@@ -331,10 +437,10 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
 }
 
 /*
- * @method createRepo create a remote repo on git with github webapi
+ * @method createRemoteRepo create a remote repo on git with github webapi
  *
  */
-exports.createRepo = function(repoName, accessToken, done) {
+exports.createRemoteRepo = function(repoName, accessToken, done) {
     var dataObject = "", options = {
       headers: {"User-Agent": "BackNode", "Authorization": "token " + accessToken},
       hostname: 'api.github.com',
