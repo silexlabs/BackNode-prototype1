@@ -40,14 +40,21 @@ exports.routeur = function(req, res, socketIo) {
 
     switch (req.param('type')) {
 
-        case 'search':
+        case 'userInfos':
+            exports.getUserInfos(req.param('accessToken'), function(error, data) {
+                res.write(JSON.stringify({data: data}));
+                res.send();
+            });
+        break;
+
+        case 'searchGit':
             exports.find("dropbox", req.param('path'), req, function(isGit) {
                 res.write(JSON.stringify({git: isGit}));
                 res.send();
             });
         break;
 
-        case 'scan':
+        case 'scanFolder':
             var rd = Date.now() * (Math.random() * 10000);
             var deployKey = rd.toString().replace(".", "");
             socketIoConfig.key = deployKey;
@@ -63,7 +70,7 @@ exports.routeur = function(req, res, socketIo) {
             res.send();
         break;
 
-        case 'git':
+        case 'grabGit':
             // grab the .git folder on user remote directory (we don't need other files to deploy modification)
             // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
             exports.grabGit("dropbox", localPath, req.param('path'), req, socketIoConfig, function(message) {
@@ -72,14 +79,14 @@ exports.routeur = function(req, res, socketIo) {
             res.send();
         break;
 
-        case 'create':
+        case 'createRepo':
             exports.createRemoteRepo(req.param('name'), req.param('accessToken'), function(repoUrl) {
                 res.write(JSON.stringify({repoUrl: repoUrl}));
                 res.send();
             });
         break;
 
-        case 'all' :
+        case 'deployFolder' :
             // grab a folder (not just .git)
             unigrab.grabFolder("dropbox", localPath, pathFileInfo[req.param('deployKey')], req, socketIoConfig, function(message) {
                 exports.deployOnGHPages(localPath + "/" + req.param('path'), req.param('accessToken'), req.param('initOnUrl'), req, socketIoConfig, function(done) {
@@ -348,25 +355,6 @@ exports.getGitHubPageUrl = function(localPath, done) {
 }
 
 /*
- * @method exec exec a bash command and log it
- *
- */
-exports.exec = function(localPath, command, done) {
-    cp.exec("cd " + localPath + " && " + command, function(error, stdout, stderr) {
-        console.log("#########################");
-        console.log("Exec command: ", command);
-        console.log("Exec path: ", localPath);
-        if (stdout && stdout !== "") {
-            console.log("Exec stdout: ", stdout);
-        }
-        if (stderr && stderr !== "") {
-            console.log("Exec stderr: ", stderr);
-        }
-        done(error, stdout, stderr);
-    });
-}
-
-/*
  * @method pushToMasterAndGHPages push the commit to master and reset gh-pages with master
  *
  */
@@ -441,12 +429,61 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
  *
  */
 exports.createRemoteRepo = function(repoName, accessToken, done) {
+    exports.gitHubApiRequest(accessToken, "POST", "/user/repos", {name: repoName.replace("/", "")}, function(error, data) {
+        if (!error && data.clone_url) {
+            done(data.clone_url);
+        } else {
+            done("");
+        }
+    });
+}
+
+/*
+ * @method getUserInfos retrieve user informations from github api
+ *
+ */
+exports.getUserInfos = function(accessToken, done) {
+    exports.gitHubApiRequest(accessToken, "GET", "/user", null, done);
+}
+
+/*
+ * @method deleteLocalPath delete folder at the given path
+ *
+ */
+exports.deleteLocalPath = function(localPath, done) {
+    exports.exec(".", "rm -rf " + localPath, done || function(){});
+}
+
+/*
+ * @method exec execute a bash command and log it
+ *
+ */
+exports.exec = function(localPath, command, done) {
+    cp.exec("cd " + localPath + " && " + command, function(error, stdout, stderr) {
+        console.log("#########################");
+        console.log("Exec command: ", command);
+        console.log("Exec path: ", localPath);
+        if (stdout && stdout !== "") {
+            console.log("Exec stdout: ", stdout);
+        }
+        if (stderr && stderr !== "") {
+            console.log("Exec stderr: ", stderr);
+        }
+        done(error, stdout, stderr);
+    });
+}
+
+/*
+ * @method gitHubApiRequest create https request for github api
+ *
+ */
+exports.gitHubApiRequest = function(accessToken, method, path, params, done) {
     var dataObject = "", options = {
       headers: {"User-Agent": "BackNode", "Authorization": "token " + accessToken},
       hostname: 'api.github.com',
       port: 443,
-      path: "/user/repos",
-      method: 'POST'
+      path: path,
+      method: method
     };
 
     var r = https.request(options, function(res) {
@@ -456,27 +493,18 @@ exports.createRemoteRepo = function(repoName, accessToken, done) {
 
         res.on('end', function() {
             dataObject = JSON.parse(dataObject);
-            if (dataObject.clone_url) {
-                done(dataObject.clone_url);
-            } else {
-                done("");
-            }
+            done(null, dataObject);
         });
     });
 
     r.on('error', function(error) {
         console.log(error);
-        done("");
+        done(error, null);
     });
 
-    r.write(JSON.stringify({name: repoName.replace("/", "")}));
-    r.end();
-}
+    if (params) {
+        r.write(JSON.stringify(params));
+    }
 
-/*
- * @method deleteLocalPath delete folder at the given path
- *
- */
-exports.deleteLocalPath = function(localPath, done) {
-    exports.exec(".", "rm -rf " + localPath, done || function(){});
+    r.end();
 }

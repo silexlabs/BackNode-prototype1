@@ -61,6 +61,8 @@ BackNode.prototype.git = {
             textManGit: $('.modal-body #deployOnGoing p'),
             textGitHubPageUrl: $('#deployOnGoing center'),
             textProgressBar: $('#deployOnGoing .progress span'),
+            textUserProfile: $('#userProfile h4'),
+            imageUserProfile: $('#userProfile img'),
             templateCB: "<div class='checkbox'><label><input type='checkbox' name='TO_REPLACE' checked> TO_REPLACE </label></div>"
         };
     },
@@ -83,7 +85,7 @@ BackNode.prototype.git = {
 
         this.git.dropboxPath = path;
 
-        $.get("/deploy/search", {"path": this.git.dropboxPath}, function(response) {
+        $.get("/deploy/searchGit", {"path": this.git.dropboxPath}, function(response) {
             var d = JSON.parse(response);
 
             if (d.git) {
@@ -135,7 +137,7 @@ BackNode.prototype.git = {
                 this.git.ui.progressBar.hide();
                 this.git.ui.inputCreate.attr("value", this.git.dropboxPath);
             } else {
-                $.get("/deploy/scan", {"path": this.git.path}, function(response) {
+                $.get("/deploy/scanFolder", {"path": this.git.path}, function(response) {
                     this.git.deployKey = JSON.parse(response).deployKey;
                     if (!this.git.socket) {
                         this.git.socket = io.connect("http://" + window.location.hostname);
@@ -177,7 +179,7 @@ BackNode.prototype.git = {
             this.git.ui.btDeploy.addClass('disabled');
             this.git.ui.btDeployGit.addClass('disabled');
             this.git.ui.textManGit.hide();
-            $.get("/deploy/all", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token});
+            $.get("/deploy/deployFolder", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token});
             this.git.initOnUrl = ""; //if necessary, init is normally done
             this.git.state = this.git.STATES.DEPLOY;
         }
@@ -197,7 +199,7 @@ BackNode.prototype.git = {
         this.git.ui.btDeployGit.addClass('disabled');
 
         //TODO must be finished (grab the saved file too)
-        $.get("/deploy/git", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
+        $.get("/deploy/grabGit", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
     },
     // Get the current deploying status from the server with socketIo
     getDeployStatus: function(data) {
@@ -248,7 +250,7 @@ BackNode.prototype.git = {
         }
     },
     createRepo : function() {
-        $.get("/deploy/create", {name: this.git.ui.inputCreate.attr("value"), accessToken: this.git.access_token}, function(response) {
+        $.get("/deploy/createRepo", {name: this.git.ui.inputCreate.attr("value"), accessToken: this.git.access_token}, function(response) {
             var d = JSON.parse(response);
             this.git.path = this.git.ui.inputCreate.attr("value");
             this.git.state = this.git.STATES.GO_DEPLOY;
@@ -262,11 +264,25 @@ BackNode.prototype.git = {
             var d = JSON.parse(response);
             if (d.access_token) {
                 this.git.access_token = d.access_token;
+
+                if (!this.git.user_infos) {
+                    $.get("/deploy/userInfos", {accessToken: d.access_token}, function(response) {
+                        var o = JSON.parse(response);
+                        if (o.data) {
+                            this.git.user_infos = o.data;
+                            this.git.updateProfile.bind(this, o.data.avatar_url, o.data.login || o.data.name)();
+                        }
+                    }.bind(this));
+                }
             }
             if (callback) {
                 callback(d.access_token);
             }
         }.bind(this));
+    },
+    updateProfile: function(avatar, userName) {
+        this.git.ui.imageUserProfile.attr("src", avatar || "http://i2.wp.com/assets-cdn.github.com/images/gravatars/gravatar-user-420.png");
+        this.git.ui.textUserProfile.html(userName || "Login");
     }
 };
 
