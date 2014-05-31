@@ -314,9 +314,10 @@ exports.checkIfBranchIsMaster = function(localPath, done) {
  *
  */
 exports.commitWithDate = function(localPath, done) {
+    var author = "BackNode <backnode.silex@gmail.com>";
     exports.exec(localPath, "git add . --all", function(error, stdout, stderr) {
         if (!error) {
-            exports.exec(localPath, "git commit -m 'BackNode deploy " + new Date() + "'", function(error, stdout, stderr) {
+            exports.exec(localPath, "git commit -m 'BackNode deploy " + new Date() + "' --author='" + author + "'", function(error, stdout, stderr) {
                 if (!error) {
                     done(true, stdout);
                 } else {
