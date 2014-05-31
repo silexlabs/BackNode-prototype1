@@ -70,15 +70,6 @@ exports.routeur = function(req, res, socketIo) {
             res.send();
         break;
 
-        case 'grabGit':
-            // grab the .git folder on user remote directory (we don't need other files to deploy modification)
-            // unigit use the unigrab module to grab .git folder, use unigrab directly if you don't want to retrieve .git but all the remote folders
-            exports.grabGit("dropbox", localPath, req.param('path'), req, socketIoConfig, function(message) {
-                unigrab.ioEmit(socketIoConfig, message);
-            });
-            res.send();
-        break;
-
         case 'createRepo':
             exports.createRemoteRepo(req.param('name'), req.param('accessToken'), function(repoUrl) {
                 res.write(JSON.stringify({repoUrl: repoUrl}));
@@ -116,19 +107,6 @@ exports.routeur = function(req, res, socketIo) {
             res.send();
         break;
     }
-}
-
-/*
- * @method grabGit grab the .git folder on the remotePath given
- *
- */
-exports.grabGit = function(service, localPath, remotePath, req, socketIoConfig, done) {
-    unigrab.scanPath(service, localPath, remotePath + "/.git", null, req, socketIoConfig, function(pathInfos) {
-        unigrab.ioEmit(socketIoConfig, "total files git: " + pathInfos.fileCount);
-        unigrab.grabFolder(service, localPath, pathInfos, req, socketIoConfig, function(message) {
-            done(message);
-        });
-    });
 }
 
 /*

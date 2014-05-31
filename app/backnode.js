@@ -27,12 +27,7 @@ BackNode.prototype.explorer = {
         var iframe = $('iframe')[0].contentDocument;
         var serializer = new XMLSerializer();
         var content = serializer.serializeToString(iframe);
-        cloudExplorer.write(backNode.file, content, function() {
-            if (this.fileSaved.indexOf(this.iframe.src) === -1) {
-                this.fileSaved.push(this.iframe.src.replace("http://" + window.location.host + "/api/v1.0/dropbox/exec/get/", ""));
-            }
-            callback();
-        }.bind(this));
+        cloudExplorer.write(backNode.file, content, callback);
     }
 };
 
@@ -52,10 +47,8 @@ BackNode.prototype.git = {
             progressBar: $('#deployOnGoing .progress'),
             progressBarCurrent: $('#deployOnGoing .progress-bar'),
             btDeploy: $('#deployModalButton'),
-            btDeployGit: $('#deployGitModalButton'),
             btCreate: $('#chooseProjectFolder button'),
             inputCreate: $('#chooseProjectFolder input'),
-            boxChooseFile: $('.modal-body #chooseFiles'),
             boxCreate: $('#chooseProjectFolder'),
             boxDeploy: $('.modal-body #deployOnGoing'),
             textDeploy: $('#deployOnGoing textarea'),
@@ -80,7 +73,6 @@ BackNode.prototype.git = {
             this.git.deployButton = deployButton;
             this.git.deployButton.on("click", this.git.showDeployWindow.bind(this));
             this.git.ui.btDeploy.on("click", this.git.deploy.bind(this));
-            this.git.ui.btDeployGit.on("click", this.git.showDeploySaved.bind(this));
             this.git.ui.btCreate.on("click", this.git.createRepo.bind(this));
         }
 
@@ -132,13 +124,11 @@ BackNode.prototype.git = {
         } else if (this.git.access_token === "pending") {
             this.git.getToken.bind(this)(this.git.showDeployWindow.bind(this));
         } else {
-            this.git.ui.boxChooseFile.hide();
             this.git.ui.boxCreate.hide();
             this.git.ui.textDeploy.hide().html("");
             this.git.ui.boxDeploy.show();
             this.git.ui.btDeploy.show();
             this.git.ui.textManGit.show();
-            this.git.ui.btDeployGit.removeClass('disabled');
             this.git.ui.btDeploy.addClass('disabled');
             this.git.ui.textGitHubPageUrl.hide();
             this.git.ui.progressBar.show();
@@ -157,57 +147,14 @@ BackNode.prototype.git = {
             }
         }
     },
-    showDeploySaved: function() {
-        if (this.git.ui.boxChooseFile.html() !== "") {
-            this.git.ui.boxChooseFile.html("");
-            this.git.ui.textManGit.hide();
-            this.git.ui.boxDeploy.show();
-            this.git.deployJustGit.bind(this)();
-        } else {
-            this.git.ui.boxChooseFile.show();
-            this.git.ui.boxDeploy.hide();
-            this.git.ui.btDeploy.hide();
-            this.git.ui.btDeployGit.addClass('disabled');
-
-            if (this.fileSaved.length > 0) {
-                for (var i in this.fileSaved) {
-                    if (this.fileSaved.hasOwnProperty(i)) {
-                        this.git.ui.boxChooseFile.append(this.git.ui.templateCB.replace(/TO_REPLACE/g, this.fileSaved[i]));
-                    }
-                }
-                this.git.ui.btDeployGit.removeClass('disabled');
-            } else {
-                this.git.ui.boxChooseFile.append("You haven't save any files, so nothing to deploy...");
-                this.git.ui.btDeployGit.addClass('disabled');
-            }
-        }
-    },
     deploy: function() {
         if (this.git.access_token) {
             this.git.ui.btDeploy.addClass('disabled');
-            this.git.ui.btDeployGit.addClass('disabled');
             this.git.ui.textManGit.hide();
             $.get("/deploy/deployFolder", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token});
             this.git.initOnUrl = ""; //if necessary, init is normally done
             this.git.state = this.git.STATES.DEPLOY;
         }
-    },
-    deployJustGit: function() {
-        var fileToDeploy = [];
-        var _this = this;
-
-        $('.modal-body #chooseFiles input').each(function() {
-            if (this.checked) {
-                _this.fileSaved.splice(_this.fileSaved.indexOf(this.name), 1); //delete the entry to deploy off the fileSaved table (use to know how file can be deploy)
-                fileToDeploy.push(this.name);
-            }
-        });
-
-        this.git.ui.btDeploy.addClass('disabled');
-        this.git.ui.btDeployGit.addClass('disabled');
-
-        //TODO must be finished (grab the saved file too)
-        $.get("/deploy/grabGit", {"path": this.git.path, "deployKey": this.git.deployKey, "files": fileToDeploy});
     },
     // Get the current deploying status from the server with socketIo
     getDeployStatus: function(data) {
