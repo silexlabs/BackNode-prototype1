@@ -366,7 +366,7 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
         if (!error) {
             gitRemoteUrl = stdout.replace("https://", "https://" + accessToken + "@");
 
-            exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout, stderr) {
+            exports.exec(localPath, "git push -f " + gitRemoteUrl, function(error, stdout, stderr) {
                 if (!error) {
                     switchToGHPagesBranche(function(switchDone, stdout2) {
                         if (switchDone) {
@@ -409,7 +409,7 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     function resetAndPush(pushDone) {
         exports.exec(localPath, "git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout2, stderr) {
+                exports.exec(localPath, "git push -f " + gitRemoteUrl, function(error, stdout2, stderr) {
                     if (!error) {
                         exports.exec(localPath, "git checkout master", function(error, stdout3, stderr) {
                             pushDone(true, stdout + stdout2);
@@ -430,11 +430,19 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
  *
  */
 exports.createRemoteRepo = function(repoName, accessToken, done) {
-    exports.gitHubApiRequest(accessToken, "POST", "/user/repos", {name: repoName.replace("/", "")}, function(error, data) {
+    repoName = repoName.replace("/", "");
+    exports.gitHubApiRequest(accessToken, "POST", "/user/repos", {name: repoName}, function(error, data) {
         if (!error && data.clone_url) {
             done(data.clone_url);
         } else {
-            done("");
+            //repo already exist, construct repo url
+            exports.getUserInfos(accessToken, function(error, data) {
+                if (!error) {
+                    done("https://github.com/" + data.login + "/" + repoName + ".git");
+                } else {
+                    done("");
+                }
+            });
         }
     });
 }
