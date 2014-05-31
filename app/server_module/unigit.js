@@ -17,9 +17,11 @@ var pathFileInfo = {};
  */
 exports.middleware = function(app, socketIo) {
     //git oauth
-    app.use('/gitOauth', cookieParser('backNodeGit'));
-    app.use('/gitOauth', cookieSession({ secret: 'backNodeGit'}));
-    app.get('/gitOauth', exports.oauth);
+    app.use('/gitOauth/', cookieParser('backNodeGit'));
+    app.use('/gitOauth/', cookieSession({ secret: 'backNodeGit'}));
+    app.get('/gitOauth/:deployKey', function(req, res) {
+        exports.oauth(req, res, socketIo);
+    });
 
     //to use unifile as an api
     app.use('/deploy', bodyParser());
@@ -48,25 +50,23 @@ exports.routeur = function(req, res, socketIo) {
         break;
 
         case 'searchGit':
+            var rd = Date.now() * (Math.random() * 10000);
+            var deployKey = rd.toString().replace(".", "");
+            socketIoConfig.key = deployKey;
+
             exports.find("dropbox", req.param('path'), req, function(isGit) {
-                res.write(JSON.stringify({git: isGit}));
+                res.write(JSON.stringify({git: isGit, deployKey: deployKey}));
                 res.send();
             });
         break;
 
         case 'scanFolder':
-            var rd = Date.now() * (Math.random() * 10000);
-            var deployKey = rd.toString().replace(".", "");
-            socketIoConfig.key = deployKey;
-
             exports.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
-                unigrab.scanPath("dropbox", "tempFolder/" + deployKey, req.param('path'), ignorePath, req, socketIoConfig, function(pathInfos) {
+                unigrab.scanPath("dropbox", localPath, req.param('path'), ignorePath, req, socketIoConfig, function(pathInfos) {
                     unigrab.ioEmit(socketIoConfig, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
-                    pathFileInfo[deployKey] = pathInfos;
+                    pathFileInfo[req.param('deployKey')] = pathInfos;
                 });
             });
-
-            res.write(JSON.stringify({deployKey: deployKey}));
             res.send();
         break;
 
@@ -200,7 +200,7 @@ exports.find = function(service, remotePath, req, done) {
  * @method oauth get user access token and put it in a cookie (see https://developer.github.com/v3/oauth/)
  *
  */
-exports.oauth = function(req, res) {
+exports.oauth = function(req, res, socketIo) {
     if (req.param('code')) {
         var access_token, dataObject, options = {
           hostname: 'github.com',
@@ -213,6 +213,7 @@ exports.oauth = function(req, res) {
             resG.on('data', function (chunk) {
                 dataObject = querystring.parse(chunk.toString());
                 if (dataObject.access_token) {
+                    unigrab.ioEmit({io:socketIo, key:req.param('deployKey')}, "git connection success");
                     access_token = dataObject.access_token;
                     res.cookie('git_access_token', access_token, {signed: true});
                     res.write("<script>window.close()</script>");
@@ -250,7 +251,7 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
             if (!error) {
                 exports.exec(localPath, "git remote add origin " + initOnRepoUrl, function(error, stdout, stderr) {
                     if (!error) {
-                        exports.deployOnGHPages(localPath, "", req, socketIoConfig, done);
+                        exports.deployOnGHPages(localPath, accessToken, "", req, socketIoConfig, done);
                     } else {
                         console.log(error);
                     }

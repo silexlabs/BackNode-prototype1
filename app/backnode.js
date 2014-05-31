@@ -38,11 +38,12 @@ BackNode.prototype.explorer = {
 
 BackNode.prototype.git = {
     STATES : {
-        INIT: 1,
-        GO_DEPLOY: 2,
-        DEPLOY: 3,
-        DOWNLOAD_FINISH: 4,
-        SCAN_FINISH: 5
+        CONNECT: "connect",
+        INIT: "init",
+        GO_DEPLOY: "deploy",
+        DEPLOY: "deploy_ongoing",
+        DOWNLOAD_FINISH: "download_finish",
+        SCAN_FINISH: "scan_finish"
     },
     // retrieve ui from document node
     getUI: function() {
@@ -88,17 +89,31 @@ BackNode.prototype.git = {
         $.get("/deploy/searchGit", {"path": this.git.dropboxPath}, function(response) {
             var d = JSON.parse(response);
 
-            if (d.git) {
-                this.git.path = d.git;
-                this.git.state = this.git.STATES.GO_DEPLOY;
-                this.git.deployButton.html(this.git.deployButton.html().replace("Init", "Deploy"));
-            } else {
-                this.git.state = this.git.STATES.INIT;
-                this.git.deployButton.html(this.git.deployButton.html().replace("Deploy", "Init"));
+            //init socket with deployKey
+            this.git.deployKey = d.deployKey;
+            if (!this.git.socket) {
+                this.git.socket = io.connect("http://" + window.location.hostname);
             }
+            this.git.socket.on(d.deployKey, this.git.getDeployStatus.bind(this));
 
-            this.git.deployButton.show();
-            this.git.getToken.bind(this)();
+            //check if user is connected
+            this.git.getToken.bind(this, function(token) {
+                // if we have a token and a git folder on the remote project, deploy
+                if (d.git) {
+                    this.git.path = d.git;
+                    this.git.updateDeployButton.bind(this, this.git.STATES.GO_DEPLOY)();
+                } else {
+                // else init a git repo
+                    this.git.updateDeployButton.bind(this, this.git.STATES.INIT)();
+                }
+
+                // if no git token, client as to connect
+                if (!token) {
+                    this.git.updateDeployButton.bind(this, this.git.STATES.CONNECT)();
+                }
+
+                this.git.deployButton.show();
+            }.bind(this))();
 
             //get git app conf
             $.get("/conf/gitAppId.json", null, function(response) {
@@ -111,8 +126,8 @@ BackNode.prototype.git = {
         }.bind(this));
     },
     showDeployWindow: function() {
-        if (!this.git.access_token) {
-            window.open("https://github.com/login/oauth/authorize?redirect_uri=" + this.git.appId.client_redirect + "/gitOauth/&scope=repo&client_id=" + this.git.appId.client_id + "&state=" + Date.now(),"_blank","width=1150,height=750");
+        if (this.git.state === this.git.STATES.CONNECT && !this.git.access_token) {
+            window.open("https://github.com/login/oauth/authorize?redirect_uri=" + this.git.appId.client_redirect + "/gitOauth/" + this.git.deployKey + "/&scope=repo&client_id=" + this.git.appId.client_id + "&state=" + Date.now(),"_blank","width=1150,height=750");
             this.git.access_token = "pending";
         } else if (this.git.access_token === "pending") {
             this.git.getToken.bind(this)(this.git.showDeployWindow.bind(this));
@@ -137,14 +152,7 @@ BackNode.prototype.git = {
                 this.git.ui.progressBar.hide();
                 this.git.ui.inputCreate.attr("value", this.git.dropboxPath);
             } else {
-                $.get("/deploy/scanFolder", {"path": this.git.path}, function(response) {
-                    this.git.deployKey = JSON.parse(response).deployKey;
-                    if (!this.git.socket) {
-                        this.git.socket = io.connect("http://" + window.location.hostname);
-                    }
-                    this.git.socket.on(this.git.deployKey, this.git.getDeployStatus.bind(this));
-                }.bind(this));
-
+                $.get("/deploy/scanFolder", {"path": this.git.path, deployKey: this.git.deployKey}, function(){});
                 this.git.state = this.git.STATES.DEPLOY;
             }
         }
@@ -215,6 +223,10 @@ BackNode.prototype.git = {
                 this.git.ui.textDeploy.hide();
                 this.git.state = data.code;
             }
+        } else if (data.code.indexOf("git connection success") === 0) {
+            // if we have a git folder on the remote project, deploy state
+            // else init a git repo
+            this.git.updateDeployButton.bind(this, this.git.path ? this.git.STATES.GO_DEPLOY : this.git.STATES.INIT)();
         } else if (data.code.indexOf("http://") === 0) {
             //everything is finish, show the return url (GitHub Page or Heroku, etc..)
             this.git.ui.textGitHubPageUrl.show();
@@ -222,6 +234,7 @@ BackNode.prototype.git = {
             this.git.ui.textProgressBar.append("   <i class='fa fa-check-square-o'></i>");
             this.git.ui.progressBarCurrent.get(0).className = "progress-bar progress-bar-success";
             this.git.ui.progressBar.get(0).className = "progress";
+            this.git.updateDeployButton.bind(this, this.git.STATES.GO_DEPLOY)();
         } else if (data.code.indexOf("files found:") === 0) {
             //currently scanning the folder
             if (data.code.indexOf("files found: 1") === 0) {
@@ -260,7 +273,7 @@ BackNode.prototype.git = {
         }.bind(this));
     },
     getToken: function(callback) {
-        $.get("/gitOauth", null, function(response) {
+        $.get("/gitOauth/none", null, function(response) {
             var d = JSON.parse(response);
             if (d.access_token) {
                 this.git.access_token = d.access_token;
@@ -283,6 +296,10 @@ BackNode.prototype.git = {
     updateProfile: function(avatar, userName) {
         this.git.ui.imageUserProfile.attr("src", avatar || "http://i2.wp.com/assets-cdn.github.com/images/gravatars/gravatar-user-420.png");
         this.git.ui.textUserProfile.html(userName || "Login");
+    },
+    updateDeployButton: function(state) {
+        this.git.state = state;
+        this.git.deployButton.html(this.git.deployButton.html().replace(/init|deploy|connect/gi, state));
     }
 };
 
