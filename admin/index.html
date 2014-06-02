@@ -1,75 +1,125 @@
 <!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<title>BackNode</title>
-	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" href="./css/normalize.css">
-	<link rel="stylesheet" href="./css/font-awesome.min.css">
-	<link rel="stylesheet" href="./css/style.css">
-	<link rel="stylesheet" href="../submodules/cloud-explorer/lib/app/css/style.css">
-	<link rel="icon" type="image/ico" href="./img/favicon.ico">
+    <meta charset="utf-8">
+    <title>BackNode</title>
+    <link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="./css/normalize.css">
+    <link rel="stylesheet" href="./css/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="/cloud-explorer/lib/app/css/style.css"> <!-- cloud explorer -->
+    <link rel="icon" type="image/ico" href="./img/favicon.ico">
+    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
 </head>
 <body>
-	<div id="loader">
-		<div id="loader-container">
-			<div id="loader-empty"></div>
-			<div id="loader-fill"></div>
-		</div>
-	</div>
+    <div class="modal fade">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h2 class="modal-title"><i class="fa fa-github fa-2x"></i> GitHub Pages</h2>
+          </div>
+          <div class="modal-body">
+                <div id="deployOnGoing">
+                    <p>
+                        What are GitHub Pages?<br/><br/>
+                        GitHub Pages are public webpages freely hosted and easily published through our site. You can create and publish them online using the Automatic Page Generator (BackNode help you with this part). If you prefer to work locally, you can use the GitHub for Mac and Windows apps, or the command line.<br/><br/>
+                    </p>
+                    <p>---------------------------------------------------------------------------------------------------</p>
+                    <p>Please wait a little, BackNode are currently scanning your folder to estimate deploying duration</p>
+                    <p>Otherwise, if it's too long (> 10mn), your project are maybe to big to grab all the informations</p>
+                    <div id="chooseProjectFolder">
+                        <h3>Choose a project folder to init <i class="fa fa-github fa-1x"></i>Git on it:</h3>
+                        <input class="form-control pull-left" id="projectFolder" placeholder="Project folder" style="width:80%">&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button type="button" class="btn btn-success" id="buttonProjectFolder">Select</button>
+                    </div>
+                    <div class="progress progress-striped active">
+                      <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                        <span></span>
+                      </div>
+                    </div>
+                    <textarea rows="10" cols="89"></textarea>
+                    <center></center>
+                </div>
+          </div>
+          <div class="modal-footer">
+            <div id="userProfile" class="pull-left">
+                <img width="35" style="margin-right:10px" src="http://i2.wp.com/assets-cdn.github.com/images/gravatars/gravatar-user-420.png" class="pull-left" />
+                <h4 class="pull-left">Login</h4>
+            </div>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="deployModalButton">Deploy folder <i class="fa fa-cog fa-spin"></i></button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    <div id="loader">
+        <div id="loader-container">
+            <div id="loader-empty"></div>
+            <div id="loader-fill"></div>
+        </div>
+    </div>
 
-	<div id="dark-bgr">
-		<div id="loading"></div>
-	</div>
+    <div id="dark-bgr">
+        <div id="loading"></div>
+    </div>
 
-	<div id="tools">
-		<div id="menu-wrapper">
-			<div id="edit-mode">
-				Mode <span class="bold">édition</span> :
-				<div id="editor"></div>
-			</div>
-			<ul>
-				<li id="open"><i class="fa fa-upload"></i> Import file</li>
-				<li id="cancel"><i class="fa fa-reply"></i> Cancel</li>
-				<li id="save"><i class="fa fa-save"></i> Save</li>
-				<li id="responsize"><a href="#"><div id="logo-responsize"></div> Responsize</a></li>
-			</ul>
-			<div id="background"></div>
-		</div>
-	</div>
+    <div id="tools">
+        <div id="menu-wrapper">
+            <div id="edit-mode">
+                Mode <span class="bold">édition</span> :
+                <div id="editor"></div>
+            </div>
+            <ul>
+                <li id="open"><i class="fa fa-upload"></i> Import file</li>
+                <li id="cancel"><i class="fa fa-reply"></i> Cancel</li>
+                <li id="save"><i class="fa fa-save"></i> Save</li>
+                <li id="deploy"><i class="fa fa-github"></i> GIT Deploy</li>
+            </ul>
+            <div id="background"></div>
+        </div>
+    </div>
 
-	<div id="iframe-container">
-		<div id="resize-iframe">
-			<iframe src="about:blank" id="iframe"></iframe>
-			<div id="resize-bar">
-				<div id="resolution">
-					<ul id="resolution-presets">
-						<li data-width="1920" data-height="1080">Full HD</li>
-						<li data-width="1280" data-height="720">HD Ready</li>
-						<li data-width="320" data-height="480">iPhone 3GS</li>
-						<li data-width="640" data-height="960">iPhone 4</li>
-						<li data-width="640" data-height="1136">iPhone 5</li>
-						<li data-width="768" data-height="1024">iPad</li>
-					</ul>
-					<span id="iframe-width">1024</span>x<span id="iframe-height">768</span>
-					<i class="fa fa-caret-up"></i>
-				</div>
-			</div>
-			<div id="resize-icon"></div>
-		</div>
-	</div>
+    <div id="iframe-container">
+        <div id="resize-iframe">
+            <iframe src="about:blank" id="iframe"></iframe>
+            <div id="resize-bar">
+                <div id="resolution">
+                    <ul id="resolution-presets">
+                        <li data-width="1920" data-height="1080">Full HD</li>
+                        <li data-width="1280" data-height="720">HD Ready</li>
+                        <li data-width="320" data-height="480">iPhone 3GS</li>
+                        <li data-width="640" data-height="960">iPhone 4</li>
+                        <li data-width="640" data-height="1136">iPhone 5</li>
+                        <li data-width="768" data-height="1024">iPad</li>
+                    </ul>
+                    <span id="iframe-width">1024</span>x<span id="iframe-height">768</span>
+                    <i class="fa fa-caret-up"></i>
+                </div>
+            </div>
+            <div id="resize-icon"></div>
+        </div>
+    </div>
 
-	<div id="CE" ng-app="ceDirectives">
-		<div class="ce-browser"></div>
-	</div>
+    <div id="CE" ng-app="ceDirectives">
+        <div class="ce-browser"></div>
+    </div>
 
 
-	<!-- be careful about script order :) -->
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js" type="text/javascript"></script>
-	<script src="./js/script.min.js" type="text/javascript"></script>
-	<script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()" type="text/javascript"></script>
-	<script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()" type="text/javascript"></script>
-	<script src="../submodules/cloud-explorer/lib/app/js/cloud-explorer.js" onload="loadProgress()"  type="text/javascript"></script>
-	<script src="../app/backnode.min.js" onload="loadProgress()"  type="text/javascript"></script>
+    <!-- be careful about script order :) -->
+    <script src="/jquery/jquery.min.js"></script>
+    <script src="./js/script.min.js" type="text/javascript"></script>
+    <script src="/socket.io/socket.io.js" onload="loadProgress()"></script>
+    <script src="/bootstrap/js/bootstrap.min.js" onload="loadProgress()"></script>
+    <script src="http://code.angularjs.org/1.1.5/angular.js" onload="loadProgress()" type="text/javascript"></script>
+    <script src="http://code.angularjs.org/1.1.5/angular-resource.js" onload="loadProgress()" type="text/javascript"></script>
+    <script src="/cloud-explorer/lib/app/js/cloud-explorer.js" onload="loadProgress()"  type="text/javascript"></script>
+    <script src="/backnode.min.js" onload="loadProgress()"  type="text/javascript"></script>
 </body>
 </html>

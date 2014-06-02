@@ -27,7 +27,8 @@ module.exports = function(grunt) {
                     "$": true,
                     "window": true,
                     "cloudExplorer": true,
-                    "XMLSerializer": true
+                    "XMLSerializer": true,
+                    "io": true
                   }
                 },
                 src: ["Gruntfile.js", "app/server.js", "app/backnode.js", "admin/js/script.js"]

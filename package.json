@@ -7,8 +7,8 @@
   		"cookie-parser": "~1.0.x",
   		"cookie-session": "~1.0.x",
 		"unifile": "*",
+		"socket.io": "*",
 		"grunt": "*",
-		"grunt-cli": "*",
 		"grunt-contrib-jshint": "*",
 		"grunt-contrib-uglify": "*"
 	}

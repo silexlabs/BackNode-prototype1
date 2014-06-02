@@ -1,1 +1,1 @@
-web: make
+web: npm install && make

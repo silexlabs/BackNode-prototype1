@@ -20,7 +20,7 @@ var imgAllowed = [
 	'image/gif'
 ];
 
-var NbObjToLoad = 4 + allImages.length;
+var NbObjToLoad = 6 + allImages.length;
 var NbObjLoaded = 0;
 
 function loadProgress(){
@@ -109,38 +109,49 @@ $(window.document).ready(function() {
 
 	// Click on open
 	$('#tools #open').click(function() {
-		backNode.explorer.pick(function(file) {
+		backNode.explorer.pick.bind(backNode, function(file) {
 			if(file.mimetype === 'text/html') {
 				backNode.file = file;
 				$('#resize-iframe').css('background-image', 'none');
-				$(backNode.iframe).attr('src', file.url).load(function(){
-					// iFrame loaded
-					backNode.document = this.contentDocument;
-					backNode.editor.addCkeditor(backNode.document);
-					$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
-						backNode.explorer.pick(function(file) {
-							var $img = backNode.editingPicture;
-							if(~imgAllowed.indexOf(file.mimetype)) {
-								var baseUrl = backNode.file.url.split('/');
-								baseUrl.pop();
-								baseUrl = baseUrl.join('/') + '/';
-								var imgUrl = absToRel(baseUrl, file.url);
-								$img.attr('src', imgUrl);
-								$('#bn-popinPicture div div span', $('#iframe').contents()).click();
-							} else {
-								window.alert('Invalid extension !');
-							}
+				if (!backNode.iframeAlreadyBind) {
+					$(backNode.iframe).load(function(){
+						// iFrame loaded
+						backNode.document = this.contentDocument;
+						backNode.editor.addCkeditor(backNode.document); //add ckeditor on iframe (rich text editor inline)
+
+						var path = this.src.substr(0, this.src.lastIndexOf("/") + 1).replace(window.location.origin + "/api/v1.0/dropbox/exec/get/", "");
+						backNode.git.search.bind(backNode)(path, $("#deploy")); //search if we have a git repo on dropbox folder tree, and bind a button if we want
+
+						$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
+							backNode.explorer.pick.bind(backNode, function(file) {
+								var $img = backNode.editingPicture;
+								if(~imgAllowed.indexOf(file.mimetype)) {
+									var baseUrl = backNode.file.url.split('/');
+									baseUrl.pop();
+									baseUrl = baseUrl.join('/') + '/';
+									var imgUrl = absToRel(baseUrl, file.url);
+									$img.attr('src', imgUrl);
+									$('#bn-popinPicture div div span', $('#iframe').contents()).click();
+								} else {
+									window.alert('Invalid extension !');
+								}
+							})();
+						});
+
+						$('#dark-bgr').stop().fadeOut(150);
+						$('#tools ul li:not(#open, #deploy)').show();
+						$('#edit-mode').slideDown(function() {
+							$(window).resize();
 						});
 					});
+					backNode.iframeAlreadyBind = true;
+				}
 
-					$('#dark-bgr').stop().fadeOut(150);
-					$('#tools ul li:not(#open)').show();
-					$('#edit-mode').slideDown();
-				});
+				$(backNode.iframe).attr('src', file.url);
 			} else {
 				window.alert('Invalid extension !');
 			}
-		}, true);
+		}, true)();
 	});
 
 	var iframeDoc = $('#iframe').contents().get(0);
@@ -165,7 +176,7 @@ $(window.document).ready(function() {
 		$('#dark-bgr').stop().fadeIn(150);
 		backNode.editor.editable(backNode.baliseSearch.getList(backNode.document),false);
 		backNode.editor.cleanCkeditor(backNode.document);
-		backNode.explorer.save(function(){
+		backNode.explorer.save.bind(backNode)(function(){
 			window.alert('File saved !');
 			$('#dark-bgr').stop().fadeOut(150);
 			$('#tools #editor').toggleClass("switch-on");

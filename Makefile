@@ -1,13 +1,11 @@
-make: backnode
+make: brandName runNode
 
-backnode: npm build
+build: buildGrunt brandName runNode
 
-build: buildGrunt run
-
-run: brandName runNode
+dev: npmAndBower ckeditor buildGrunt brandName runNode
 
 
-
+##########################################################
 
 
 brandName:
@@ -21,16 +19,22 @@ brandName:
 	#
 	# runing ...
 
+npmAndBower:
+	#If you have not bower, call "sudo npm i -g bower" before all
+	npm install
+	bower install bootstrap
+	bower update
+	cp  -rf ./bower_components/bootstrap/dist/* ./app/bootstrap/
+	cp  -rf ./bower_components/jquery/dist/jquery.min.js ./app/jquery/jquery.min.js
+
 ckeditor:
+	git submodule init && git submodule update
 	cd ./submodules/ckeditor-dev/ && git pull origin stable
 	./submodules/ckeditor-dev/dev/builder/build.sh
 	cp  -rf ./submodules/ckeditor-dev/dev/builder/release/ckeditor/* ./app/ckeditor/
 
-
-npm:
-	npm install
-
 buildGrunt:
+	#If you have not grunt, call "sudo npm i -g grunt-cli" before all
 	grunt
 
 runNode:
