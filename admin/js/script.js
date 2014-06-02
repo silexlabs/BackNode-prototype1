@@ -109,7 +109,7 @@ $(window.document).ready(function() {
 
 	// Click on open
 	$('#tools #open').click(function() {
-		backNode.explorer.pick(function(file) {
+		backNode.explorer.pick.bind(backNode, function(file) {
 			if(file.mimetype === 'text/html') {
 				backNode.file = file;
 				$('#resize-iframe').css('background-image', 'none');
@@ -123,7 +123,7 @@ $(window.document).ready(function() {
 						backNode.git.search.bind(backNode)(path, $("#deploy")); //search if we have a git repo on dropbox folder tree, and bind a button if we want
 
 						$('body', $('#iframe').contents()).on('click', '#bn-picUpload', function(){
-							backNode.explorer.pick(function(file) {
+							backNode.explorer.pick.bind(backNode, function(file) {
 								var $img = backNode.editingPicture;
 								if(~imgAllowed.indexOf(file.mimetype)) {
 									var baseUrl = backNode.file.url.split('/');
@@ -135,7 +135,7 @@ $(window.document).ready(function() {
 								} else {
 									window.alert('Invalid extension !');
 								}
-							});
+							})();
 						});
 
 						$('#dark-bgr').stop().fadeOut(150);
@@ -151,7 +151,7 @@ $(window.document).ready(function() {
 			} else {
 				window.alert('Invalid extension !');
 			}
-		}, true);
+		}, true)();
 	});
 
 	var iframeDoc = $('#iframe').contents().get(0);

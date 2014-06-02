@@ -54,15 +54,15 @@ exports.routeur = function(req, res, socketIo) {
             var deployKey = rd.toString().replace(".", "");
             socketIoConfig.key = deployKey;
 
-            exports.find("dropbox", req.param('path'), req, function(isGit) {
+            exports.find(req.param('service'), req.param('path'), req, function(isGit) {
                 res.write(JSON.stringify({git: isGit, deployKey: deployKey}));
                 res.send();
             });
         break;
 
         case 'scanFolder':
-            exports.scanGitIgnore("dropbox", req.param('path'), req, function(ignorePath) {
-                unigrab.scanPath("dropbox", localPath, req.param('path'), ignorePath, req, socketIoConfig, function(pathInfos) {
+            exports.scanGitIgnore(req.param('service'), req.param('path'), req, function(ignorePath) {
+                unigrab.scanPath(req.param('service'), localPath, req.param('path'), ignorePath, req, socketIoConfig, function(pathInfos) {
                     unigrab.ioEmit(socketIoConfig, "total files: " + pathInfos.fileCount + " estimate duration: " + unigrab.estimateTime(pathInfos.fileCount));
                     pathFileInfo[req.param('deployKey')] = pathInfos;
                 });
@@ -79,13 +79,13 @@ exports.routeur = function(req, res, socketIo) {
 
         case 'deployFolder' :
             // grab a folder (not just .git)
-            unigrab.grabFolder("dropbox", localPath, pathFileInfo[req.param('deployKey')], req, socketIoConfig, function(message) {
+            unigrab.grabFolder(req.param('service'), localPath, pathFileInfo[req.param('deployKey')], req, socketIoConfig, function(message) {
                 exports.deployOnGHPages(localPath + "/" + req.param('path'), req.param('accessToken'), req.param('initOnUrl'), req, socketIoConfig, function(done) {
                     if (done) {
                         var gitFolder = req.param('path') + "/.git";
                         unigrab.ioEmit(socketIoConfig, "update git project status on your dropbox folder...");
                         // when deploy is finish on gitHub, we must update the .git folder on dropbox, because we do the commit on backnode local machine, so the dropbox project don't know about commit
-                        uniput.putFolder("dropbox", localPath, gitFolder, req, function(error) {
+                        uniput.putFolder(req.param('service'), localPath, gitFolder, req, function(error) {
                             if (!error) {
                                 unigrab.ioEmit(socketIoConfig, "git updated, deploy ok");
                                 exports.getGitHubPageUrl(localPath + "/" + req.param('path'), function(error, stdout) {
@@ -345,7 +345,7 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
         if (!error) {
             gitRemoteUrl = stdout.replace("https://", "https://" + accessToken + "@");
 
-            exports.exec(localPath, "git push -f " + gitRemoteUrl, function(error, stdout, stderr) {
+            exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout, stderr) {
                 if (!error) {
                     switchToGHPagesBranche(function(switchDone, stdout2) {
                         if (switchDone) {
@@ -388,7 +388,7 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     function resetAndPush(pushDone) {
         exports.exec(localPath, "git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                exports.exec(localPath, "git push -f " + gitRemoteUrl, function(error, stdout2, stderr) {
+                exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout2, stderr) {
                     if (!error) {
                         exports.exec(localPath, "git checkout master", function(error, stdout3, stderr) {
                             pushDone(true, stdout + stdout2);

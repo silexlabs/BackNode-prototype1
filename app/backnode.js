@@ -14,12 +14,13 @@ BackNode.prototype.explorer = {
     pick: function(callback, notHide){
         $('#dark-bgr').show();
         cloudExplorer.pick({}, function(data){
+            this.git.currentService = data.url.split("/")[3];
             $(window).resize();
             if(!notHide) {
                 $('#dark-bgr').hide();
             }
             callback(data);
-        });
+        }.bind(this));
     },
 
     save: function(callback){
@@ -78,7 +79,7 @@ BackNode.prototype.git = {
 
         this.git.dropboxPath = path;
 
-        $.get("/deploy/searchGit", {"path": this.git.dropboxPath}, function(response) {
+        $.get("/deploy/searchGit", {path: this.git.dropboxPath, service: this.git.currentService}, function(response) {
             var d = JSON.parse(response);
 
             //init socket with deployKey
@@ -142,7 +143,7 @@ BackNode.prototype.git = {
                 this.git.ui.progressBar.hide();
                 this.git.ui.inputCreate.attr("value", this.git.dropboxPath);
             } else {
-                $.get("/deploy/scanFolder", {"path": this.git.path, deployKey: this.git.deployKey}, function(){});
+                $.get("/deploy/scanFolder", {path: this.git.path, deployKey: this.git.deployKey, service: this.git.currentService}, function(){});
                 this.git.state = this.git.STATES.DEPLOY;
             }
         }
@@ -151,7 +152,7 @@ BackNode.prototype.git = {
         if (this.git.access_token) {
             this.git.ui.btDeploy.addClass('disabled');
             this.git.ui.textManGit.hide();
-            $.get("/deploy/deployFolder", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token});
+            $.get("/deploy/deployFolder", {path: this.git.path, deployKey: this.git.deployKey, initOnUrl: this.git.initOnUrl || "", accessToken: this.git.access_token, service: this.git.currentService});
             this.git.initOnUrl = ""; //if necessary, init is normally done
             this.git.state = this.git.STATES.DEPLOY;
         }
