@@ -227,7 +227,7 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
         // git init on folder to create the .git folder. then, add the remote url and start deploy again
         exports.exec(localPath, "git init", function(error, stdout, stderr) {
             if (!error) {
-                exports.exec(localPath, "git remote add origin " + initOnRepoUrl, function(error, stdout, stderr) {
+                exports.exec(localPath, "git remote add origin " + initOnRepoUrl.replace("https://", "https://" + accessToken + "@"), function(error, stdout, stderr) {
                     if (!error) {
                         exports.deployOnGHPages(localPath, accessToken, "", req, socketIoConfig, done);
                     } else {
@@ -240,31 +240,39 @@ exports.deployOnGHPages = function(localPath, accessToken, initOnRepoUrl, req, s
         });
     } else if (accessToken) {
         // start to deploy
-        exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
-            if (isOnMaster) {
-                exports.commitWithDate(localPath, function(commitIsDone, stdout) {
-                    unigrab.ioEmit(socketIoConfig, stdout);
+        exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
+            exports.exec(localPath, "git remote set-url origin " + stdout.replace(/https:\/\/.+github/g, "https://" + accessToken + "@github"), function(error, stdout, stderr) {
+                if (!error) {
+                    exports.checkIfBranchIsMaster(localPath, function(isOnMaster, stdout) {
+                        if (isOnMaster) {
+                            exports.commitWithDate(localPath, function(commitIsDone, stdout) {
+                                unigrab.ioEmit(socketIoConfig, stdout);
 
-                    if (commitIsDone) {
-                        exports.pushToMasterAndGHPages(localPath, accessToken, req, function(deployDone, stdout) {
-                            unigrab.ioEmit(socketIoConfig, stdout);
-                            if (deployDone) {
-                                done(true);
-                            } else {
-                                unigrab.ioEmit(socketIoConfig, "deploy error");
-                                done(false);
-                            }
-                        });
-                    } else {
-                        console.log("### " + stdout);
-                        done(false);
-                    }
-                });
+                                if (commitIsDone) {
+                                    exports.pushToMasterAndGHPages(localPath, accessToken, req, function(deployDone, stdout) {
+                                        unigrab.ioEmit(socketIoConfig, stdout);
+                                        if (deployDone) {
+                                            done(true);
+                                        } else {
+                                            unigrab.ioEmit(socketIoConfig, "deploy error");
+                                            done(false);
+                                        }
+                                    });
+                                } else {
+                                    console.log("### " + stdout);
+                                    done(false);
+                                }
+                            });
 
-            } else {
-                unigrab.ioEmit(socketIoConfig, "your git folder are not on master branch");
-                done(false);
-            }
+                        } else {
+                            unigrab.ioEmit(socketIoConfig, "your git folder are not on master branch");
+                            done(false);
+                        }
+                    });
+                } else {
+                    console.log(error);
+                }
+            });
         });
     } else {
         // no connection on git, we must have the git access token before everything
@@ -339,35 +347,25 @@ exports.getGitHubPageUrl = function(localPath, done) {
  *
  */
 exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
-    var gitRemoteUrl;
-
-    exports.getRemoteUrl("origin", localPath, function(error, stdout, stderr) {
+    exports.exec(localPath, "git push -u origin master", function(error, stdout, stderr) {
         if (!error) {
-            gitRemoteUrl = stdout.replace("https://", "https://" + accessToken + "@");
-
-            exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout, stderr) {
-                if (!error) {
-                    switchToGHPagesBranche(function(switchDone, stdout2) {
-                        if (switchDone) {
-                            resetAndPush(function(pushDone, stdout3) {
-                                if (pushDone) {
-                                    done(true, stdout + stdout2 + stdout3);
-                                } else {
-                                    done(false, stdout + stdout2 + stdout3);
-                                }
-                            });
+            switchToGHPagesBranche(function(switchDone, stdout2) {
+                if (switchDone) {
+                    resetAndPush(function(pushDone, stdout3) {
+                        if (pushDone) {
+                            done(true, stdout + stdout2 + stdout3);
                         } else {
-                            done(false, stdout + stdout2);
+                            done(false, stdout + stdout2 + stdout3);
                         }
                     });
                 } else {
-                    done(false, stdout);
+                    done(false, stdout + stdout2);
                 }
             });
         } else {
             done(false, stdout);
         }
-    })
+    });
 
     function switchToGHPagesBranche(switchDone) {
         exports.exec(localPath, "git fetch origin && git checkout -b gh-pages", function(error, stdout, stderr) {
@@ -388,7 +386,7 @@ exports.pushToMasterAndGHPages = function(localPath, accessToken, req, done) {
     function resetAndPush(pushDone) {
         exports.exec(localPath, "git reset --hard origin/master", function(error, stdout, stderr) {
             if (!error) {
-                exports.exec(localPath, "git push " + gitRemoteUrl, function(error, stdout2, stderr) {
+                exports.exec(localPath, "git push -f -u origin gh-pages", function(error, stdout2, stderr) {
                     if (!error) {
                         exports.exec(localPath, "git checkout master", function(error, stdout3, stderr) {
                             pushDone(true, stdout + stdout2);

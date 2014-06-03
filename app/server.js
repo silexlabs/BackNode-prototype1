@@ -6,7 +6,7 @@ unigit = require('./server_module/unigit.js');
 
 var backnode = express();
 var serverIo = http.createServer(backnode);
-var socketIo = io.listen(serverIo);
+var socketIo = io.listen(serverIo, { log: false });
 
 var options = unifile.defaultConfig;
 
